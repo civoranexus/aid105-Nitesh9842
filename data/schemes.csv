@@ -1,0 +1,4 @@
+scheme_id,scheme_name,state,income_limit,category
+SCH001,PM Awas Yojana,All,180000,Housing
+SCH002,PM Kisan Samman Nidhi,All,200000,Agriculture
+SCH003,State Scholarship,Maharashtra,250000,Education
