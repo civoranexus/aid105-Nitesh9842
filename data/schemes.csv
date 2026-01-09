@@ -1,4 +1,7 @@
-scheme_id,scheme_name,state,income_limit,category
-SCH001,PM Awas Yojana,All,180000,Housing
-SCH002,PM Kisan Samman Nidhi,All,200000,Agriculture
-SCH003,State Scholarship,Maharashtra,250000,Education
+id,name,description,category,min_age,max_age,max_income,state,deadline,benefits
+1,PM Kisan Samman Nidhi,Direct income support for farmers,Agriculture,18,100,200000,All,2025-03-31,₹6000 per year
+2,Ayushman Bharat,Health insurance coverage,Healthcare,0,100,500000,All,N/A,₹5 lakh health cover
+3,PM Awas Yojana,Housing assistance for poor,Housing,21,65,300000,All,2025-06-30,Subsidized housing loan
+4,Sukanya Samriddhi Yojana,Savings scheme for girl child,Education,0,10,0,All,N/A,High interest savings
+5,PM Mudra Yojana,Loans for small businesses,Business,18,65,0,All,N/A,Loans up to ₹10 lakh
+6,National Scholarship Portal,Educational scholarships,Education,16,35,250000,All,2025-02-28,Tuition fee support
