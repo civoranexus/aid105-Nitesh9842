@@ -130,4 +130,55 @@
   Made with ❤️ by CivoraX Team
 </p>
 
+# 🏛️ SchemeAssist AI
+
+**Government Scheme Recommendation System**
+
+Project ID: AID105 | Civora Nexus Pvt. Ltd. | CivoraX Internship
+
+## 📋 Overview
+SchemeAssist AI helps citizens discover government schemes they are eligible for using an intelligent recommendation engine.
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run backend server
+cd backend
+python app.py
+
+# Open frontend
+# Open frontend/index.html in browser
+```
+
+## 📁 Project Structure
+```
+aid105-Nitesh9842/
+├── backend/          # Flask API & AI logic
+├── data/             # Schemes database
+├── frontend/         # Web interface
+├── reports/          # Report generator
+├── docs/             # Documentation
+└── tests/            # Unit tests
+```
+
+## ✨ Features
+- ✅ AI-powered scheme matching
+- ✅ Eligibility scoring
+- ✅ Deadline alerts
+- ✅ Report generation
+
+## 🛠️ Tech Stack
+- Python, Flask
+- HTML, CSS, JavaScript
+- Pandas
+
+## 👤 Author
+**Nitesh** - CivoraX Intern
+
+---
+*Civora Nexus Pvt. Ltd. © 2025*
+
 

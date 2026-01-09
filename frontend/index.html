@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SchemeAssist AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>SchemeAssist AI</h1>
+    <p>Government Scheme Recommendation System</p>
+</header>
+
+<section class="container">
+
+    <h2>User Profile</h2>
+
+    <form id="profileForm">
+        <label>State</label>
+        <input type="text" id="state" placeholder="e.g. Maharashtra" required>
+
+        <label>Annual Income (₹)</label>
+        <input type="number" id="income" placeholder="e.g. 150000" required>
+
+        <label>Category</label>
+        <select id="category">
+            <option>Agriculture</option>
+            <option>Education</option>
+            <option>Housing</option>
+            <option>General</option>
+        </select>
+
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    <div id="results"></div>
+
+</section>
+
+<footer>
+    <p>
+        Disclaimer: Scheme recommendations are based on available data.
+        Final eligibility depends on official government rules.
+    </p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
