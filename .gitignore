@@ -53,3 +53,28 @@ temp/
 # Package lock files (optional - uncomment if needed)
 # package-lock.json
 # yarn.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+reports/*.md
+!reports/sample_report.md
