@@ -1,7 +1,41 @@
-id,name,description,category,min_age,max_age,max_income,state,deadline,benefits
-1,PM Kisan Samman Nidhi,Direct income support for farmers,Agriculture,18,100,200000,All,2025-03-31,₹6000 per year
-2,Ayushman Bharat,Health insurance coverage,Healthcare,0,100,500000,All,N/A,₹5 lakh health cover
-3,PM Awas Yojana,Housing assistance for poor,Housing,21,65,300000,All,2025-06-30,Subsidized housing loan
-4,Sukanya Samriddhi Yojana,Savings scheme for girl child,Education,0,10,0,All,N/A,High interest savings
-5,PM Mudra Yojana,Loans for small businesses,Business,18,65,0,All,N/A,Loans up to ₹10 lakh
-6,National Scholarship Portal,Educational scholarships,Education,16,35,250000,All,2025-02-28,Tuition fee support
+scheme_id,scheme_name,level,state,category,min_age,max_age,min_income,max_income,target_group,benefits,is_active,last_updated
+SCH001,PM Kisan Samman Nidhi,Central,All,Agriculture,18,100,0,200000,Small & Marginal Farmers,Annual ₹6000 direct income,Yes,2025-01-01
+SCH002,Pradhan Mantri Awas Yojana (Gramin),Central,All,Housing,18,100,0,180000,Rural Poor,Housing subsidy,Yes,2025-01-01
+SCH003,Pradhan Mantri Awas Yojana (Urban),Central,All,Housing,18,100,0,200000,Urban Poor,CLSS subsidy,Yes,2025-01-01
+SCH004,Ayushman Bharat – PMJAY,Central,All,Health,0,100,0,500000,EWS Families,5 lakh health cover,Yes,2025-01-01
+SCH005,Pradhan Mantri Jan Dhan Yojana,Central,All,Finance,18,100,0,999999,All Citizens,Bank account access + benefits,Yes,2025-01-01
+SCH006,Pradhan Mantri Mudra Yojana,Central,All,Business,18,65,0,500000,Small Entrepreneurs,Collateral free loans,Yes,2025-01-01
+SCH007,Stand Up India,Central,All,Business,18,65,0,1000000,Woman/SC/ST Entrepreneurs,Loan support,Yes,2025-01-01
+SCH008,PM Suraksha Bima Yojana,Central,All,Insurance,18,70,0,200000,All Citizens,Accidental death cover,Yes,2025-01-01
+SCH009,PM Jeevan Jyoti Bima Yojana,Central,All,Insurance,18,50,0,200000,All Citizens,Life insurance,Yes,2025-01-01
+SCH010,Atal Pension Yojana,Central,All,Pension,18,60,0,200000,Workers,Guaranteed pension,Yes,2025-01-01
+SCH011,National Pension Scheme (NPS),Central,All,Pension,18,60,0,999999,All Citizens,Retirement corpus,Yes,2025-01-01
+SCH012,Public Provident Fund (PPF),Central,All,Investment,18,65,0,999999,All Citizens,Tax free return,Yes,2025-01-01
+SCH013,Sukanya Samriddhi Yojana,Central,All,Savings,0,18,0,999999,Girl Child,High interest savings,Yes,2025-01-01
+SCH014,Pradhan Mantri Shram Yogi Maan-dhan,Central,All,Pension,18,40,0,150000,Unorganized Workers,Pension after 60,Yes,2025-01-01
+SCH015,SWAYAM,Central,All,Education,15,99,0,999999,Students,Free online courses,Yes,2025-01-01
+SCH016,Skill India Mission,Central,All,Employment,18,45,0,999999,Youth,Skill training,Yes,2025-01-01
+SCH017,Make in India,Central,All,Industry,18,65,0,999999,Entrepreneurs,Industry growth support,Yes,2025-01-01
+SCH018,Digital India,Central,All,Digital,0,99,0,999999,All Citizens,Digital infrastructure,Yes,2025-01-01
+SCH019,Startup India Scheme,Central,All,Business,18,60,0,999999,Startup Founders,Funding and tax benefits,Yes,2025-01-01
+SCH020,National Career Service,Central,All,Employment,18,60,0,999999,Job Seekers,Job matching services,Yes,2025-01-01
+SCH021,MGNREGA / VB-G RAM G,Central,All,Employment,18,60,0,999999,Rural Workers,125 days guaranteed work,Yes,2025-01-01
+SCH022,Pradhan Mantri Gram Sadak Yojana,Central,All,Rural Dev,18,99,0,999999,All Rural Citizens,Rural road development,Yes,2025-01-01
+SCH023,National Rural Livelihood Mission,Central,All,Rural Dev,18,60,0,999999,Rural Poor,Self help support,Yes,2025-01-01
+SCH024,National Social Assistance Programme,Central,All,Social Welfare,60,100,0,999999,Seniors,Pension benefits,Yes,2025-01-01
+SCH025,Deen Dayal Upadhyaya Gram Jyoti Yojana,Central,All,0,99,0,999999,Rural Households,Electricity access,Yes,2025-01-01
+SCH026,Pradhan Mantri Fasal Bima Yojana,Central,All,Agriculture,18,65,0,999999,Farmers,Crop insurance,Yes,2025-01-01
+SCH027,National Food Security Mission,Central,All,Agriculture,18,65,0,999999,Farmers,Benefit for crops,Yes,2025-01-01
+SCH028,PM Dhan-Dhaanya Krishi Yojana,Central,All,Agriculture,18,65,0,999999,Farmers,Agricultural support,Yes,2025-01-01
+SCH029,PM Svanidhi Revamp,Central,All,Business,18,60,0,999999,Street Vendors,Credit and support,Yes,2025-01-01
+SCH030,Micro-Enterprise Credit Card,Central,All,Business,18,60,0,999999,Micro Enterprises,Credit facility,Yes,2025-01-01
+SCH031,SWAMIH Fund 2,Central,All,Housing,18,99,0,999999,Real Estate,Housing finance,Yes,2025-01-01
+SCH032,PM Vishwakarma Scheme,Central,All,Skill Dev,18,60,0,999999,Artisans,Skill support,Yes,2025-01-01
+SCH033,PM Surya Ghar Yojana,Central,All,Energy,18,99,0,999999,Households,Solar panels support,Yes,2025-01-01
+SCH034,National AYUSH Mission,Central,All,Health,0,99,0,999999,All,AYUSH healthcare support,Yes,2025-01-01
+SCH035,Beti Bachao Beti Padhao,Central,All,Social Welfare,0,99,0,999999,Girl Child,Gender equality support,Yes,2025-01-01
+SCH036,Swachh Bharat Mission,Central,All,Sanitation,0,99,0,999999,All Citizens,Sanitation facilities,Yes,2025-01-01
+SCH037,National Digital Literacy Mission,Central,All,Digital,10,60,0,999999,Students/Digits,Digital literacy training,Yes,2025-01-01
+SCH038,Pradhan Mantri Poshan Shakti Nirman,Central,All,Nutrition,0,18,0,999999,Children,Child nutrition support,Yes,2025-01-01
+SCH039,Operation Green Scheme,Central,All,Agriculture,18,65,0,999999,Horticulture farmers,Price support,Yes,2025-01-01
+SCH040,National Clean Air Programme,Central,All,0,99,0,999999,All Citizens,Air quality improvement,Yes,2025-01-01
