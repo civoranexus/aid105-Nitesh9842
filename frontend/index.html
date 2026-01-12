@@ -1,51 +1,343 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SchemeAssist AI</title>
+    <title>SchemeAssist AI - Government Scheme Recommender</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <h1>SchemeAssist AI</h1>
-    <p>Government Scheme Recommendation System</p>
-</header>
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <i class="fas fa-chart-bar"></i> SchemeAssist AI
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
+            <li><a href="#recommend" class="nav-link" data-section="recommend">Recommendations</a></li>
+            <li><a href="#alerts" class="nav-link" data-section="alerts">Alerts</a></li>
+            <li><a href="#compare" class="nav-link" data-section="compare">Compare</a></li>
+            <li><a href="#about" class="nav-link" data-section="about">About</a></li>
+        </ul>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</nav>
 
-<section class="container">
-
-    <h2>User Profile</h2>
-
-    <form id="profileForm">
-        <label>State</label>
-        <input type="text" id="state" placeholder="e.g. Maharashtra" required>
-
-        <label>Annual Income (₹)</label>
-        <input type="number" id="income" placeholder="e.g. 150000" required>
-
-        <label>Category</label>
-        <select id="category">
-            <option>Agriculture</option>
-            <option>Education</option>
-            <option>Housing</option>
-            <option>General</option>
-        </select>
-
-        <button type="submit">Get Recommendations</button>
-    </form>
-
-    <div id="results"></div>
-
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h1><i class="fas fa-brain"></i> SchemeAssist AI</h1>
+        <p class="tagline">AI-Powered Government Scheme Recommendation System</p>
+        <p class="description">Discover personalized government schemes tailored to your profile. Get instant recommendations, alerts, and comparisons.</p>
+        <button class="cta-button" onclick="navigateToSection('recommend')">
+            <i class="fas fa-rocket"></i> Get Started
+        </button>
+        <div class="stats">
+            <div class="stat-item">
+                <i class="fas fa-file-alt"></i>
+                <h3>40+</h3>
+                <p>Government Schemes</p>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-users"></i>
+                <h3>1000+</h3>
+                <p>Users Helped</p>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-star"></i>
+                <h3>AI Powered</h3>
+                <p>Smart Matching</p>
+            </div>
+        </div>
+    </div>
 </section>
 
-<footer>
-    <p>
-        Disclaimer: Scheme recommendations are based on available data.
-        Final eligibility depends on official government rules.
-    </p>
+<!-- Recommendations Section -->
+<section class="section hidden" id="recommend">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-search"></i> Find Your Schemes</h2>
+            <p>Enter your details to get personalized scheme recommendations</p>
+        </div>
+
+        <div class="form-container">
+            <form id="profileForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state"><i class="fas fa-map-marker-alt"></i> State/Region</label>
+                        <select id="state" required>
+                            <option value="">Select your state</option>
+                            <option value="All">All India</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="income"><i class="fas fa-rupee-sign"></i> Annual Income</label>
+                        <input type="number" id="income" placeholder="e.g., 150000" min="0" required>
+                        <small>Enter your annual household income in rupees</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category"><i class="fas fa-th-large"></i> Interest Category</label>
+                        <select id="category" required>
+                            <option value="">Select a category</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Business">Business</option>
+                            <option value="Digital">Digital</option>
+                            <option value="Education">Education</option>
+                            <option value="Employment">Employment</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Health">Health</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Industry">Industry</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Investment">Investment</option>
+                            <option value="Pension">Pension</option>
+                            <option value="Savings">Savings</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age"><i class="fas fa-user"></i> Age (Optional)</label>
+                        <input type="number" id="age" placeholder="e.g., 35" min="0" max="120">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-search"></i> Find Schemes
+                </button>
+            </form>
+        </div>
+
+        <div id="results" class="results-container"></div>
+        
+        <div id="priorityView" class="priority-container hidden">
+            <div class="priority-section">
+                <h3><i class="fas fa-star"></i> High Priority Schemes</h3>
+                <div id="highPriority" class="scheme-grid"></div>
+            </div>
+            <div class="priority-section">
+                <h3><i class="fas fa-check-circle"></i> Medium Priority Schemes</h3>
+                <div id="mediumPriority" class="scheme-grid"></div>
+            </div>
+            <div class="priority-section">
+                <h3><i class="fas fa-info-circle"></i> Low Priority Schemes</h3>
+                <div id="lowPriority" class="scheme-grid"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Alerts Section -->
+<section class="section hidden" id="alerts">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-bell"></i> Scheme Alerts & Updates</h2>
+            <p>Stay updated with recent scheme changes and eligibility notifications</p>
+        </div>
+
+        <div class="alert-controls">
+            <button class="btn-secondary" onclick="checkUpdates()">
+                <i class="fas fa-sync-alt"></i> Check for Updates
+            </button>
+            <button class="btn-secondary" onclick="checkEligibilityChanges()">
+                <i class="fas fa-user-check"></i> Check Eligibility Changes
+            </button>
+        </div>
+
+        <div id="alertsContainer" class="alerts-grid">
+            <div class="alert-placeholder">
+                <i class="fas fa-bell-slash"></i>
+                <p>No alerts yet. Click "Check for Updates" to see recent scheme updates.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Compare Section -->
+<section class="section hidden" id="compare">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-balance-scale"></i> Compare Schemes</h2>
+            <p>Select up to 3 schemes to compare side by side</p>
+        </div>
+
+        <div class="compare-controls">
+            <div class="form-group">
+                <label>Select schemes from your recommendations to compare:</label>
+                <div id="compareSelectContainer">
+                    <p class="info-message">
+                        <i class="fas fa-info-circle"></i> 
+                        Get recommendations first to compare schemes
+                    </p>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="compareSelected()" id="compareBtn" disabled>
+                <i class="fas fa-exchange-alt"></i> Compare Selected
+            </button>
+        </div>
+
+        <div id="comparisonResults" class="comparison-grid"></div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="section hidden" id="about">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-info-circle"></i> About SchemeAssist AI</h2>
+        </div>
+
+        <div class="about-content">
+            <div class="about-card">
+                <i class="fas fa-bullseye"></i>
+                <h3>Our Mission</h3>
+                <p>To simplify access to government schemes and ensure every eligible citizen benefits from available programs through AI-powered recommendations.</p>
+            </div>
+
+            <div class="about-card">
+                <i class="fas fa-cog"></i>
+                <h3>How It Works</h3>
+                <ol>
+                    <li>Enter your profile details (state, income, interests)</li>
+                    <li>Our AI analyzes 40+ government schemes</li>
+                    <li>Get personalized recommendations with eligibility scores</li>
+                    <li>Receive alerts about new schemes and updates</li>
+                </ol>
+            </div>
+
+            <div class="about-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Features</h3>
+                <ul>
+                    <li><i class="fas fa-check"></i> AI-powered scheme matching</li>
+                    <li><i class="fas fa-check"></i> Real-time eligibility checking</li>
+                    <li><i class="fas fa-check"></i> Scheme comparison tool</li>
+                    <li><i class="fas fa-check"></i> Update notifications</li>
+                    <li><i class="fas fa-check"></i> Priority-based categorization</li>
+                    <li><i class="fas fa-check"></i> Mobile responsive design</li>
+                </ul>
+            </div>
+
+            <div class="about-card">
+                <i class="fas fa-database"></i>
+                <h3>Scheme Coverage</h3>
+                <div class="categories-grid">
+                    <span class="category-badge">Agriculture</span>
+                    <span class="category-badge">Business</span>
+                    <span class="category-badge">Education</span>
+                    <span class="category-badge">Health</span>
+                    <span class="category-badge">Housing</span>
+                    <span class="category-badge">Finance</span>
+                    <span class="category-badge">Insurance</span>
+                    <span class="category-badge">Pension</span>
+                    <span class="category-badge">Employment</span>
+                    <span class="category-badge">Digital</span>
+                </div>
+            </div>
+
+            <div class="about-card full-width">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Disclaimer</h3>
+                <p>SchemeAssist AI provides recommendations based on available data and user-provided information. Final eligibility is subject to official government verification and scheme-specific rules. Always verify details with the official scheme portals before applying.</p>
+            </div>
+
+            <div class="tech-stack">
+                <h3>Technology Stack</h3>
+                <div class="tech-badges">
+                    <span class="tech-badge"><i class="fab fa-python"></i> Python</span>
+                    <span class="tech-badge"><i class="fas fa-server"></i> Flask</span>
+                    <span class="tech-badge"><i class="fab fa-html5"></i> HTML5</span>
+                    <span class="tech-badge"><i class="fab fa-css3-alt"></i> CSS3</span>
+                    <span class="tech-badge"><i class="fab fa-js"></i> JavaScript</span>
+                    <span class="tech-badge"><i class="fas fa-brain"></i> AI/ML</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>SchemeAssist AI</h4>
+            <p>Empowering citizens with AI-driven government scheme recommendations</p>
+        </div>
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#recommend">Recommendations</a></li>
+                <li><a href="#alerts">Alerts</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Contact</h4>
+            <p><i class="fas fa-envelope"></i> support@schemeassist.ai</p>
+            <p><i class="fas fa-phone"></i> 1800-XXX-XXXX</p>
+        </div>
+        <div class="footer-section">
+            <h4>Follow Us</h4>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 SchemeAssist AI. All rights reserved. | Made with <i class="fas fa-heart"></i> for India</p>
+    </div>
 </footer>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
 
 <script src="script.js"></script>
 </body>
