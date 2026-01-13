@@ -5,6 +5,7 @@ const API_URL = 'http://localhost:5000/api';
 let currentRecommendations = [];
 let userProfile = null;
 let selectedForComparison = [];
+let alertsCache = null;
 
 // ===== DOM READY =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -188,23 +189,89 @@ function createSchemeCard(scheme, index) {
     const scoreClass = scheme.score >= 70 ? 'score-high' : 
                        scheme.score >= 40 ? 'score-medium' : 'score-low';
 
+    const ageStatus = scheme.age_eligible !== false ? 
+        '<span class="eligibility-badge eligible"><i class="fas fa-check"></i> Age Eligible</span>' :
+        '<span class="eligibility-badge not-eligible"><i class="fas fa-times"></i> Age Not Eligible</span>';
+
     card.innerHTML = `
         <h3>${scheme.scheme_name}</h3>
         <p><strong>Category:</strong> ${scheme.category}</p>
+        <p><strong>Benefits:</strong> ${scheme.benefits || 'Various benefits'}</p>
+        <p><strong>Target:</strong> ${scheme.target_group || 'All eligible citizens'}</p>
         <p><strong>Last Updated:</strong> ${scheme.last_updated}</p>
-        <div>
+        <div class="card-badges">
             <span class="score-badge ${scoreClass}">
                 <i class="fas fa-star"></i> Score: ${scheme.score}
             </span>
+            ${ageStatus}
         </div>
         <div class="card-actions">
-            <button class="btn-compare" onclick="toggleCompare(${index})">
+            <button class="btn-compare" onclick="toggleCompare(${index})" id="compare-btn-${index}">
                 <i class="fas fa-plus"></i> Compare
+            </button>
+            <button class="btn-details" onclick="showSchemeDetails(${index})">
+                <i class="fas fa-info-circle"></i> Details
             </button>
         </div>
     `;
 
     return card;
+}
+
+function showSchemeDetails(index) {
+    const scheme = currentRecommendations[index];
+    if (!scheme) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2>${scheme.scheme_name}</h2>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-th-large"></i> Category</span>
+                    <span class="detail-value">${scheme.category}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-gift"></i> Benefits</span>
+                    <span class="detail-value">${scheme.benefits || 'Various benefits'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-users"></i> Target Group</span>
+                    <span class="detail-value">${scheme.target_group || 'All eligible citizens'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-rupee-sign"></i> Income Range</span>
+                    <span class="detail-value">${formatIncomeRange(scheme.min_income, scheme.max_income)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-user"></i> Age Range</span>
+                    <span class="detail-value">${scheme.min_age || 0} - ${scheme.max_age || 100} years</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Level</span>
+                    <span class="detail-value">${scheme.level || 'Central'} ${scheme.state !== 'All' ? `(${scheme.state})` : ''}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fas fa-star"></i> Eligibility Score</span>
+                    <span class="detail-value score-badge ${scheme.score >= 70 ? 'score-high' : scheme.score >= 40 ? 'score-medium' : 'score-low'}">${scheme.score}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+function formatIncomeRange(min, max) {
+    if (!min && !max) return 'No income restrictions';
+    if (max >= 999999) return `₹${(min || 0).toLocaleString()}+`;
+    return `₹${(min || 0).toLocaleString()} - ₹${max.toLocaleString()}`;
 }
 
 function displayPriorityView(schemes) {
@@ -306,11 +373,13 @@ function toggleCompare(index) {
     
     if (indexPos > -1) {
         selectedForComparison.splice(indexPos, 1);
+        document.getElementById(`compare-btn-${index}`)?.classList.remove('selected');
     } else {
-        if (selectedForComparison.length < 3) {
+        if (selectedForComparison.length < 4) {
             selectedForComparison.push(index);
+            document.getElementById(`compare-btn-${index}`)?.classList.add('selected');
         } else {
-            showToast('You can only compare up to 3 schemes', 'error');
+            showToast('You can only compare up to 4 schemes', 'error');
             return;
         }
     }
@@ -322,11 +391,11 @@ function updateCompareSelection(checkbox) {
     const index = parseInt(checkbox.value);
     
     if (checkbox.checked) {
-        if (selectedForComparison.length < 3) {
+        if (selectedForComparison.length < 4) {
             selectedForComparison.push(index);
         } else {
             checkbox.checked = false;
-            showToast('You can only compare up to 3 schemes', 'error');
+            showToast('You can only compare up to 4 schemes', 'error');
         }
     } else {
         const pos = selectedForComparison.indexOf(index);
@@ -357,8 +426,189 @@ function compareSelected() {
     }
 
     const schemesToCompare = selectedForComparison.map(i => currentRecommendations[i]);
-    displayComparison(schemesToCompare);
-    navigateToSection('compare');
+    fetchDetailedComparison(schemesToCompare);
+}
+
+async function fetchDetailedComparison(schemes) {
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}/compare`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                scheme_names: schemes.map(s => s.scheme_name),
+                user_profile: userProfile
+            })
+        });
+
+        hideLoading();
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                displayEnhancedComparison(data.comparison);
+                navigateToSection('compare');
+                return;
+            }
+        }
+        
+        // Fallback to local comparison
+        displayComparison(schemes);
+        navigateToSection('compare');
+    } catch (error) {
+        hideLoading();
+        // Fallback to local comparison
+        displayComparison(schemes);
+        navigateToSection('compare');
+    }
+}
+
+function displayEnhancedComparison(comparison) {
+    const container = document.getElementById('comparisonResults');
+    container.innerHTML = '';
+
+    // Header with recommendation
+    if (comparison.recommendation) {
+        const recDiv = document.createElement('div');
+        recDiv.className = 'comparison-recommendation';
+        recDiv.innerHTML = `
+            <div class="recommendation-badge">
+                <i class="fas fa-trophy"></i>
+                <span>Best Match: <strong>${comparison.recommendation.scheme_name}</strong></span>
+                ${comparison.recommendation.score ? `<span class="rec-score">Score: ${comparison.recommendation.score}</span>` : ''}
+            </div>
+            <p>${comparison.recommendation.reason}</p>
+        `;
+        container.appendChild(recDiv);
+    }
+
+    // Insights section
+    if (comparison.insights && comparison.insights.length > 0) {
+        const insightsDiv = document.createElement('div');
+        insightsDiv.className = 'comparison-insights';
+        insightsDiv.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> Comparison Insights</h3>
+            <div class="insights-grid">
+                ${comparison.insights.map(insight => `
+                    <div class="insight-card">
+                        <i class="fas fa-${insight.icon}"></i>
+                        <h4>${insight.title}</h4>
+                        <p>${insight.message}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(insightsDiv);
+    }
+
+    // Comparison table
+    const tableDiv = document.createElement('div');
+    tableDiv.className = 'comparison-table-container';
+    
+    const schemes = comparison.schemes;
+    const attributes = [
+        { key: 'category', label: 'Category', icon: 'th-large' },
+        { key: 'benefits', label: 'Benefits', icon: 'gift' },
+        { key: 'target_group', label: 'Target Group', icon: 'users' },
+        { key: 'income_range', label: 'Income Range', icon: 'rupee-sign' },
+        { key: 'age_range', label: 'Age Range', icon: 'user' },
+        { key: 'level', label: 'Level', icon: 'flag' },
+        { key: 'eligibility_score', label: 'Your Score', icon: 'star' },
+        { key: 'last_updated', label: 'Last Updated', icon: 'calendar' }
+    ];
+
+    let tableHTML = `
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    ${schemes.map(s => `<th>${s.scheme_name}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    attributes.forEach(attr => {
+        tableHTML += `
+            <tr>
+                <td class="attr-label"><i class="fas fa-${attr.icon}"></i> ${attr.label}</td>
+                ${schemes.map(s => {
+                    let value = s[attr.key] || '-';
+                    if (attr.key === 'eligibility_score') {
+                        const scoreClass = value >= 70 ? 'score-high' : value >= 40 ? 'score-medium' : 'score-low';
+                        value = `<span class="score-badge ${scoreClass}">${value}</span>`;
+                    }
+                    return `<td>${value}</td>`;
+                }).join('')}
+            </tr>
+        `;
+    });
+
+    tableHTML += '</tbody></table>';
+    tableDiv.innerHTML = tableHTML;
+    container.appendChild(tableDiv);
+
+    // Visual comparison chart
+    const chartDiv = document.createElement('div');
+    chartDiv.className = 'comparison-chart';
+    chartDiv.innerHTML = `
+        <h3><i class="fas fa-chart-bar"></i> Score Comparison</h3>
+        <div class="chart-bars">
+            ${schemes.map((s, i) => {
+                const score = s.eligibility_score || 0;
+                const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+                return `
+                    <div class="chart-bar-item">
+                        <div class="chart-bar-label">${s.scheme_name.length > 20 ? s.scheme_name.substring(0, 20) + '...' : s.scheme_name}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar" style="width: ${score}%; background-color: ${colors[i % colors.length]}"></div>
+                            <span class="chart-bar-value">${score}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    container.appendChild(chartDiv);
+
+    // Export button
+    const exportDiv = document.createElement('div');
+    exportDiv.className = 'comparison-export';
+    exportDiv.innerHTML = `
+        <button class="btn-secondary" onclick="exportComparison()">
+            <i class="fas fa-download"></i> Export Comparison
+        </button>
+        <button class="btn-secondary" onclick="printComparison()">
+            <i class="fas fa-print"></i> Print
+        </button>
+    `;
+    container.appendChild(exportDiv);
+}
+
+function exportComparison() {
+    const schemes = selectedForComparison.map(i => currentRecommendations[i]);
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Attribute," + schemes.map(s => s.scheme_name).join(",") + "\n";
+    
+    const attrs = ['category', 'benefits', 'target_group', 'score', 'last_updated'];
+    attrs.forEach(attr => {
+        csvContent += attr.charAt(0).toUpperCase() + attr.slice(1) + ",";
+        csvContent += schemes.map(s => `"${s[attr] || '-'}"`).join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "scheme_comparison.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Comparison exported successfully', 'success');
+}
+
+function printComparison() {
+    window.print();
 }
 
 function displayComparison(schemes) {
@@ -411,24 +661,187 @@ async function checkUpdates() {
 
     showLoading();
 
-    // Simulate checking for updates (since backend might not have this endpoint)
-    setTimeout(() => {
-        hideLoading();
-        
-        const recentSchemes = currentRecommendations.filter(scheme => {
-            const updateDate = new Date(scheme.last_updated);
-            const daysAgo = Math.floor((new Date() - updateDate) / (1000 * 60 * 60 * 24));
-            return daysAgo <= 30;
+    try {
+        const response = await fetch(`${API_URL}/alerts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userProfile)
         });
 
-        displayAlerts(recentSchemes);
-        
-        if (recentSchemes.length > 0) {
-            showToast(`Found ${recentSchemes.length} recently updated schemes`, 'success');
-        } else {
-            showToast('No recent updates found', 'error');
+        hideLoading();
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                alertsCache = data;
+                displayEnhancedAlerts(data);
+                showToast(`Found ${data.total_count} alerts for you`, 'success');
+                return;
+            }
         }
-    }, 1000);
+        
+        // Fallback to local alerts
+        displayLocalAlerts();
+    } catch (error) {
+        hideLoading();
+        displayLocalAlerts();
+    }
+}
+
+function displayEnhancedAlerts(data) {
+    const container = document.getElementById('alertsContainer');
+    container.innerHTML = '';
+
+    // Alert summary
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'alerts-summary';
+    summaryDiv.innerHTML = `
+        <div class="summary-card">
+            <i class="fas fa-bell"></i>
+            <h4>${data.total_count}</h4>
+            <p>Total Alerts</p>
+        </div>
+        <div class="summary-card">
+            <i class="fas fa-sync-alt"></i>
+            <h4>${data.alerts.recent_updates?.length || 0}</h4>
+            <p>Recent Updates</p>
+        </div>
+        <div class="summary-card priority">
+            <i class="fas fa-exclamation-circle"></i>
+            <h4>${data.alerts.high_priority?.length || 0}</h4>
+            <p>High Priority</p>
+        </div>
+        <div class="summary-card deadline">
+            <i class="fas fa-clock"></i>
+            <h4>${data.deadlines?.length || 0}</h4>
+            <p>Deadlines</p>
+        </div>
+    `;
+    container.appendChild(summaryDiv);
+
+    // Alert filters
+    const filterDiv = document.createElement('div');
+    filterDiv.className = 'alert-filters';
+    filterDiv.innerHTML = `
+        <button class="filter-btn active" onclick="filterAlerts('all')">All</button>
+        <button class="filter-btn" onclick="filterAlerts('priority')">High Priority</button>
+        <button class="filter-btn" onclick="filterAlerts('updates')">Updates</button>
+        <button class="filter-btn" onclick="filterAlerts('deadlines')">Deadlines</button>
+        <button class="filter-btn" onclick="filterAlerts('category')">Category Match</button>
+    `;
+    container.appendChild(filterDiv);
+
+    // Alerts list container
+    const alertsList = document.createElement('div');
+    alertsList.id = 'alertsList';
+    alertsList.className = 'alerts-grid';
+    container.appendChild(alertsList);
+
+    // Display all alerts
+    displayAlertsByFilter('all', data);
+}
+
+function filterAlerts(type) {
+    // Update active filter button
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (alertsCache) {
+        displayAlertsByFilter(type, alertsCache);
+    }
+}
+
+function displayAlertsByFilter(type, data) {
+    const alertsList = document.getElementById('alertsList');
+    alertsList.innerHTML = '';
+
+    let alertsToShow = [];
+
+    switch(type) {
+        case 'priority':
+            alertsToShow = data.alerts.high_priority || [];
+            break;
+        case 'updates':
+            alertsToShow = data.alerts.recent_updates || [];
+            break;
+        case 'deadlines':
+            alertsToShow = data.deadlines || [];
+            break;
+        case 'category':
+            alertsToShow = data.alerts.category_alerts || [];
+            break;
+        default:
+            alertsToShow = [
+                ...(data.alerts.high_priority || []),
+                ...(data.deadlines || []),
+                ...(data.alerts.recent_updates || []),
+                ...(data.alerts.category_alerts || [])
+            ];
+    }
+
+    if (alertsToShow.length === 0) {
+        alertsList.innerHTML = `
+            <div class="alert-placeholder">
+                <i class="fas fa-check-circle"></i>
+                <p>No ${type === 'all' ? '' : type} alerts found.</p>
+            </div>
+        `;
+        return;
+    }
+
+    alertsToShow.forEach(alert => {
+        const alertEl = createAlertElement(alert);
+        alertsList.appendChild(alertEl);
+    });
+}
+
+function createAlertElement(alert) {
+    const el = document.createElement('div');
+    const priorityClass = alert.priority === 'critical' ? 'critical' : 
+                         alert.priority === 'high' ? 'priority' : 
+                         alert.alert_type === 'deadline' ? 'deadline' :
+                         alert.alert_type === 'update' ? 'update' : 'info';
+    
+    const icon = alert.alert_type === 'deadline' ? 'clock' :
+                alert.alert_type === 'priority' ? 'exclamation-triangle' :
+                alert.alert_type === 'update' ? 'sync-alt' :
+                alert.alert_type === 'new' ? 'star' :
+                alert.alert_type === 'category_match' ? 'bookmark' : 'bell';
+
+    el.className = `alert-item ${priorityClass}`;
+    el.innerHTML = `
+        <div class="alert-icon">
+            <i class="fas fa-${icon}"></i>
+        </div>
+        <div class="alert-content">
+            <div class="alert-header">
+                <h4>${alert.scheme_name}</h4>
+                <span class="alert-badge ${priorityClass}">${alert.priority || alert.alert_type}</span>
+            </div>
+            <p class="alert-category"><i class="fas fa-tag"></i> ${alert.category}</p>
+            <p class="alert-message">${alert.message || alert.reason || ''}</p>
+            ${alert.benefits ? `<p class="alert-benefits"><i class="fas fa-gift"></i> ${alert.benefits}</p>` : ''}
+            ${alert.deadline_info ? `<p class="alert-deadline"><i class="fas fa-calendar-alt"></i> ${alert.deadline_info}</p>` : ''}
+            ${alert.action_required ? `<p class="alert-action"><i class="fas fa-hand-point-right"></i> ${alert.action_required}</p>` : ''}
+        </div>
+    `;
+    return el;
+}
+
+function displayLocalAlerts() {
+    const recentSchemes = currentRecommendations.filter(scheme => {
+        const updateDate = new Date(scheme.last_updated);
+        const daysAgo = Math.floor((new Date() - updateDate) / (1000 * 60 * 60 * 24));
+        return daysAgo <= 30;
+    });
+
+    displayAlerts(recentSchemes);
+    
+    if (recentSchemes.length > 0) {
+        showToast(`Found ${recentSchemes.length} recently updated schemes`, 'success');
+    } else {
+        showToast('No recent updates found', 'info');
+    }
 }
 
 function displayAlerts(schemes) {
@@ -468,38 +881,153 @@ function displayAlerts(schemes) {
     });
 }
 
-function checkEligibilityChanges() {
+async function checkEligibilityChanges() {
     if (!userProfile) {
         showToast('Please get recommendations first', 'error');
         navigateToSection('recommend');
         return;
     }
 
-    // Simulate eligibility analysis
-    showLoading();
+    // Show eligibility modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content eligibility-modal">
+            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2><i class="fas fa-calculator"></i> Eligibility Calculator</h2>
+            <div class="modal-body">
+                <p>Current Income: <strong>₹${userProfile.income.toLocaleString()}</strong></p>
+                <p>Check how income changes affect your scheme eligibility:</p>
+                
+                <div class="income-change-input">
+                    <label>Income Change Amount (₹)</label>
+                    <input type="number" id="incomeChangeInput" placeholder="e.g., 50000 or -30000">
+                    <small>Use negative number for decrease</small>
+                </div>
+                
+                <div class="quick-buttons">
+                    <button onclick="setIncomeChange(50000)">+₹50,000</button>
+                    <button onclick="setIncomeChange(100000)">+₹1,00,000</button>
+                    <button onclick="setIncomeChange(-50000)">-₹50,000</button>
+                    <button onclick="setIncomeChange(-100000)">-₹1,00,000</button>
+                </div>
+                
+                <button class="btn-primary" onclick="analyzeEligibilityChange()">
+                    <i class="fas fa-search"></i> Analyze Impact
+                </button>
+                
+                <div id="eligibilityResults" class="eligibility-results"></div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+}
+
+function setIncomeChange(amount) {
+    document.getElementById('incomeChangeInput').value = amount;
+}
+
+async function analyzeEligibilityChange() {
+    const incomeChange = parseInt(document.getElementById('incomeChangeInput').value) || 0;
     
-    setTimeout(() => {
-        hideLoading();
+    if (incomeChange === 0) {
+        showToast('Please enter an income change amount', 'error');
+        return;
+    }
+
+    const resultsDiv = document.getElementById('eligibilityResults');
+    resultsDiv.innerHTML = '<div class="loading-small"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>';
+
+    try {
+        const response = await fetch(`${API_URL}/eligibility`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...userProfile,
+                income_change: incomeChange
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                displayEligibilityResults(data.eligibility_changes, resultsDiv);
+                return;
+            }
+        }
         
-        const container = document.getElementById('alertsContainer');
-        container.innerHTML = `
-            <div class="alert-item priority">
-                <div class="alert-icon">
-                    <i class="fas fa-info-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <h4>Eligibility Analysis</h4>
-                    <p>Currently eligible for ${currentRecommendations.length} schemes</p>
-                    <p>Based on your income of ₹${userProfile.income.toLocaleString()}</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                        Income changes may affect eligibility. Consult with scheme officials for accurate information.
-                    </p>
-                </div>
+        // Fallback
+        resultsDiv.innerHTML = `
+            <div class="eligibility-summary">
+                <p>Income change from ₹${userProfile.income.toLocaleString()} to ₹${(userProfile.income + incomeChange).toLocaleString()}</p>
+                <p class="info-text">Detailed analysis requires backend connection.</p>
             </div>
         `;
-        
-        showToast('Eligibility analysis complete', 'success');
-    }, 1000);
+    } catch (error) {
+        resultsDiv.innerHTML = `
+            <div class="eligibility-summary">
+                <p>Unable to fetch detailed analysis. Please ensure backend is running.</p>
+            </div>
+        `;
+    }
+}
+
+function displayEligibilityResults(results, container) {
+    const direction = results.income_change > 0 ? 'increase' : 'decrease';
+    const arrow = results.income_change > 0 ? 'arrow-up' : 'arrow-down';
+    const color = results.gained.length >= results.lost.length ? '#10b981' : '#ef4444';
+
+    container.innerHTML = `
+        <div class="eligibility-summary">
+            <div class="income-change-display">
+                <i class="fas fa-${arrow}" style="color: ${color}"></i>
+                <span>₹${Math.abs(results.income_change).toLocaleString()} ${direction}</span>
+            </div>
+            <p class="impact-summary">${results.impact_summary}</p>
+            
+            <div class="eligibility-stats">
+                <div class="stat gained">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>${results.gained.length} schemes gained</span>
+                </div>
+                <div class="stat lost">
+                    <i class="fas fa-minus-circle"></i>
+                    <span>${results.lost.length} schemes lost</span>
+                </div>
+            </div>
+            
+            ${results.gained.length > 0 ? `
+                <div class="scheme-list gained">
+                    <h4><i class="fas fa-check"></i> New Eligible Schemes</h4>
+                    ${results.gained.slice(0, 5).map(s => `
+                        <div class="scheme-item">
+                            <span>${s.scheme_name}</span>
+                            <small>${s.category}</small>
+                        </div>
+                    `).join('')}
+                    ${results.gained.length > 5 ? `<p class="more">+${results.gained.length - 5} more...</p>` : ''}
+                </div>
+            ` : ''}
+            
+            ${results.lost.length > 0 ? `
+                <div class="scheme-list lost">
+                    <h4><i class="fas fa-times"></i> Schemes You May Lose</h4>
+                    ${results.lost.slice(0, 5).map(s => `
+                        <div class="scheme-item">
+                            <span>${s.scheme_name}</span>
+                            <small>${s.category}</small>
+                        </div>
+                    `).join('')}
+                    ${results.lost.length > 5 ? `<p class="more">+${results.lost.length - 5} more...</p>` : ''}
+                </div>
+            ` : ''}
+        </div>
+    `;
 }
 
 // ===== BACKEND HEALTH CHECK =====
@@ -549,3 +1077,9 @@ window.compareSelected = compareSelected;
 window.updateCompareSelection = updateCompareSelection;
 window.checkUpdates = checkUpdates;
 window.checkEligibilityChanges = checkEligibilityChanges;
+window.showSchemeDetails = showSchemeDetails;
+window.filterAlerts = filterAlerts;
+window.setIncomeChange = setIncomeChange;
+window.analyzeEligibilityChange = analyzeEligibilityChange;
+window.exportComparison = exportComparison;
+window.printComparison = printComparison;
