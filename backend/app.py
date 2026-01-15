@@ -41,25 +41,31 @@ def recommend():
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
-        # Create user profile
+        # Create user profile with caste category support
         user_profile = {
             "state": data['state'],
             "income": int(data['income']),
             "category": data['category'],
-            "age": int(data.get('age', 30)) if data.get('age') else 30
+            "age": int(data.get('age', 30)) if data.get('age') else 30,
+            "caste_category": data.get('caste_category', 'General')
         }
         
-        # Get recommendations
-        results = recommend_schemes(user_profile)
+        # Get minimum match score (default 95 for 95-100% matches)
+        min_match_score = int(data.get('min_match_score', 95))
+        
+        # Get recommendations with minimum match filter
+        results = recommend_schemes(user_profile, min_match_score)
         
         return jsonify({
             "success": True,
             "count": len(results),
+            "min_match_applied": min_match_score,
+            "user_caste_category": user_profile['caste_category'],
             "schemes": results
         })
         
     except ValueError as e:
-        return jsonify({"error": f"Invalid income value: {str(e)}"}), 400
+        return jsonify({"error": f"Invalid value: {str(e)}"}), 400
     except Exception as e:
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 

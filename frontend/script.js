@@ -109,10 +109,12 @@ async function handleFormSubmit(e) {
     const state = document.getElementById('state').value;
     const income = document.getElementById('income').value;
     const category = document.getElementById('category').value;
+    const caste_category = document.getElementById('caste_category').value;
     const age = document.getElementById('age').value;
+    const min_match = document.getElementById('min_match')?.value || '95';
 
     // Validate
-    if (!state || !income || !category) {
+    if (!state || !income || !category || !caste_category) {
         showToast('Please fill in all required fields', 'error');
         return;
     }
@@ -122,7 +124,9 @@ async function handleFormSubmit(e) {
         state,
         income: parseInt(income),
         category,
-        age: age ? parseInt(age) : null
+        caste_category,
+        age: age ? parseInt(age) : 30,
+        min_match_score: parseInt(min_match)
     };
 
     // Show loading
@@ -186,23 +190,37 @@ function createSchemeCard(scheme, index) {
     const card = document.createElement('div');
     card.className = 'card';
     
-    const scoreClass = scheme.score >= 70 ? 'score-high' : 
-                       scheme.score >= 40 ? 'score-medium' : 'score-low';
+    const scoreClass = scheme.score >= 95 ? 'score-excellent' : 
+                       scheme.score >= 90 ? 'score-high' : 
+                       scheme.score >= 80 ? 'score-medium' : 'score-low';
 
     const ageStatus = scheme.age_eligible !== false ? 
         '<span class="eligibility-badge eligible"><i class="fas fa-check"></i> Age Eligible</span>' :
         '<span class="eligibility-badge not-eligible"><i class="fas fa-times"></i> Age Not Eligible</span>';
 
+    const casteStatus = scheme.caste_eligible !== false ? 
+        '<span class="eligibility-badge eligible"><i class="fas fa-check"></i> Caste Eligible</span>' :
+        '<span class="eligibility-badge not-eligible"><i class="fas fa-times"></i> Caste Not Eligible</span>';
+
+    const casteCategoryBadge = scheme.caste_category ? 
+        `<span class="caste-badge caste-${scheme.caste_category.toLowerCase().replace(', ', '-')}">
+            <i class="fas fa-users"></i> ${scheme.caste_category}
+        </span>` : '';
+
     card.innerHTML = `
-        <h3>${scheme.scheme_name}</h3>
+        <div class="card-header">
+            <h3>${scheme.scheme_name}</h3>
+            <span class="match-percentage ${scoreClass}">${scheme.match_percentage || scheme.score + '%'}</span>
+        </div>
         <p><strong>Category:</strong> ${scheme.category}</p>
-        <p><strong>Benefits:</strong> ${scheme.benefits || 'Various benefits'}</p>
+        <p><strong>For:</strong> ${scheme.caste_category || 'All Categories'}</p>
+        <p><strong>Benefits:</strong> ${truncateText(scheme.benefits || 'Various benefits', 100)}</p>
         <p><strong>Target:</strong> ${scheme.target_group || 'All eligible citizens'}</p>
-        <p><strong>Last Updated:</strong> ${scheme.last_updated}</p>
         <div class="card-badges">
             <span class="score-badge ${scoreClass}">
-                <i class="fas fa-star"></i> Score: ${scheme.score}
+                <i class="fas fa-star"></i> Match: ${scheme.score}%
             </span>
+            ${casteCategoryBadge}
             ${ageStatus}
         </div>
         <div class="card-actions">
@@ -216,6 +234,12 @@ function createSchemeCard(scheme, index) {
     `;
 
     return card;
+}
+
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
 }
 
 function showSchemeDetails(index) {

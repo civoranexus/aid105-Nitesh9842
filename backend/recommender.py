@@ -5,7 +5,7 @@ def load_schemes():
     schemes = []
     # Get the path relative to this file
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(current_dir, "..", "data", "schemes.csv")
+    csv_path = os.path.join(current_dir, "..", "data", "combined_schemes.csv")
     
     with open(csv_path, newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
@@ -14,7 +14,19 @@ def load_schemes():
     return schemes
 
 
-def recommend_schemes(user_profile):
+# Valid caste categories
+CASTE_CATEGORIES = ["SC", "ST", "OBC", "BC", "General", "All"]
+
+
+def recommend_schemes(user_profile, min_match_score=95):
+    """
+    Recommend schemes based on user profile.
+    Only returns schemes with 95-100% match score by default.
+    
+    Args:
+        user_profile: dict with keys - state, income, age, category, caste_category
+        min_match_score: minimum eligibility score (default 95 for 95-100% matches)
+    """
     schemes = load_schemes()
     recommended = []
 
@@ -22,16 +34,20 @@ def recommend_schemes(user_profile):
         if scheme["is_active"] != "Yes":
             continue
 
-        if scheme["state"] != "All" and scheme["state"] != user_profile["state"]:
+        if scheme["state"] != "All" and scheme["state"] != user_profile.get("state"):
             continue
 
-        income = user_profile["income"]
+        income = user_profile.get("income", 0)
         min_income = int(scheme["min_income"])
         max_income = int(scheme["max_income"])
 
         if min_income <= income <= max_income:
             # Calculate eligibility score
             score = calculate_eligibility_score(scheme, user_profile)
+            
+            # Only include schemes with 95-100% match
+            if score < min_match_score:
+                continue
             
             # Check age eligibility if provided
             age = user_profile.get("age", 30)
@@ -40,11 +56,21 @@ def recommend_schemes(user_profile):
             
             age_eligible = min_age <= age <= max_age
             
+            # Check caste category eligibility
+            user_caste = user_profile.get("caste_category", "General").upper()
+            scheme_target = scheme.get("target_group", "").upper()
+            caste_eligible = check_caste_eligibility(user_caste, scheme_target)
+            
+            if not caste_eligible:
+                continue
+            
             recommended.append({
                 "scheme_id": scheme.get("scheme_id", ""),
                 "scheme_name": scheme["scheme_name"],
                 "category": scheme["category"],
+                "caste_category": get_scheme_caste_category(scheme_target),
                 "score": score,
+                "match_percentage": f"{score}%",
                 "last_updated": scheme["last_updated"],
                 "benefits": scheme.get("benefits", ""),
                 "target_group": scheme.get("target_group", ""),
@@ -54,41 +80,125 @@ def recommend_schemes(user_profile):
                 "max_age": max_age,
                 "level": scheme.get("level", "Central"),
                 "state": scheme.get("state", "All"),
-                "age_eligible": age_eligible
+                "age_eligible": age_eligible,
+                "caste_eligible": caste_eligible
             })
 
     recommended.sort(key=lambda x: x["score"], reverse=True)
     return recommended
 
 
+def check_caste_eligibility(user_caste, scheme_target):
+    """
+    Check if user's caste category is eligible for the scheme.
+    
+    Args:
+        user_caste: User's caste category (SC, ST, OBC, BC, General)
+        scheme_target: Scheme's target group text
+    """
+    # Normalize user caste
+    user_caste = user_caste.upper().strip()
+    if user_caste == "BC":
+        user_caste = "OBC"  # BC and OBC are same
+    
+    # If scheme is for all citizens or eligible citizens, everyone is eligible
+    general_keywords = ["ALL CITIZENS", "ELIGIBLE CITIZENS", "ALL HOUSEHOLDS", "ALL"]
+    if any(keyword in scheme_target for keyword in general_keywords):
+        return True
+    
+    # Check for specific caste categories in target group
+    caste_keywords = {
+        "SC": ["SC", "SCHEDULED CASTE", "SCHEDULED CASTES"],
+        "ST": ["ST", "SCHEDULED TRIBE", "SCHEDULED TRIBES", "TRIBAL"],
+        "OBC": ["OBC", "BC", "OTHER BACKWARD", "BACKWARD CLASS", "BACKWARD CLASSES"],
+        "GENERAL": ["GENERAL", "UNRESERVED"]
+    }
+    
+    # Check if scheme targets specific caste
+    scheme_castes = []
+    for caste, keywords in caste_keywords.items():
+        if any(keyword in scheme_target for keyword in keywords):
+            scheme_castes.append(caste)
+    
+    # If no specific caste mentioned, assume open to all
+    if not scheme_castes:
+        return True
+    
+    # Check if user's caste matches scheme's target castes
+    return user_caste in scheme_castes
+
+
+def get_scheme_caste_category(target_group):
+    """
+    Extract caste category from scheme's target group.
+    Returns: SC, ST, OBC, General, or All
+    """
+    target_upper = target_group.upper()
+    
+    categories = []
+    
+    if "SC" in target_upper or "SCHEDULED CASTE" in target_upper:
+        categories.append("SC")
+    if "ST" in target_upper or "SCHEDULED TRIBE" in target_upper or "TRIBAL" in target_upper:
+        categories.append("ST")
+    if "OBC" in target_upper or "BC" in target_upper or "BACKWARD CLASS" in target_upper:
+        categories.append("OBC")
+    
+    if not categories:
+        return "All"  # Open to all categories
+    
+    return ", ".join(categories)
+
+
 def calculate_eligibility_score(scheme, user_profile):
-    """Calculate a comprehensive eligibility score"""
+    """
+    Calculate a comprehensive eligibility score (0-100).
+    Higher score means better match for the user.
+    """
     score = 0
     
-    # Base score for income match
-    score += 40
+    # Base score for income match (25 points)
+    score += 25
     
-    # Category match bonus
-    if scheme["category"] == user_profile["category"]:
-        score += 35
+    # Category match bonus (25 points)
+    if scheme["category"] == user_profile.get("category"):
+        score += 25
+    elif user_profile.get("category") in ["Social Welfare", "Education", "Health"]:
+        # Partial match for related categories
+        score += 10
     
-    # Age match bonus
+    # Age match bonus (20 points)
     age = user_profile.get("age", 30)
     min_age = int(scheme.get("min_age", 0))
     max_age = int(scheme.get("max_age", 100))
     
     if min_age <= age <= max_age:
-        score += 15
-        # Bonus for optimal age range
-        age_range = max_age - min_age
-        if age_range > 0:
-            age_position = (age - min_age) / age_range
-            if 0.2 <= age_position <= 0.8:
-                score += 5
+        score += 20
     
-    # State-specific scheme bonus
+    # Caste category match bonus (20 points)
+    user_caste = user_profile.get("caste_category", "General").upper()
+    scheme_target = scheme.get("target_group", "").upper()
+    
+    if check_caste_eligibility(user_caste, scheme_target):
+        # Check if scheme specifically targets user's caste
+        caste_specific_match = False
+        if user_caste == "SC" and ("SC" in scheme_target or "SCHEDULED CASTE" in scheme_target):
+            caste_specific_match = True
+        elif user_caste == "ST" and ("ST" in scheme_target or "SCHEDULED TRIBE" in scheme_target):
+            caste_specific_match = True
+        elif user_caste in ["OBC", "BC"] and ("OBC" in scheme_target or "BC" in scheme_target or "BACKWARD" in scheme_target):
+            caste_specific_match = True
+        
+        if caste_specific_match:
+            score += 20  # Full bonus for specific caste match
+        else:
+            score += 15  # Partial bonus for general eligibility
+    
+    # State-specific scheme bonus (10 points)
     if scheme.get("state") == user_profile.get("state") and scheme.get("state") != "All":
-        score += 5
+        score += 10
+    elif scheme.get("state") == "All":
+        score += 5  # Partial bonus for central schemes
     
     return min(score, 100)
 
