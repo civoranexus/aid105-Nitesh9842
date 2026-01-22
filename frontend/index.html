@@ -17,13 +17,17 @@
     <div class="nav-container">
         <div class="logo">
             <img src="assets/civora_logo.png" alt="Civora Nexus logo">
-            <span>Civora Nexus</span>
+            <!-- <span>Civora Nexus</span> -->
         </div>
         <ul class="nav-menu">
             <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
             <li><a href="#recommend" class="nav-link" data-section="recommend">Recommendations</a></li>
             <li><a href="#alerts" class="nav-link" data-section="alerts">Alerts</a></li>
             <li><a href="#compare" class="nav-link" data-section="compare">Compare</a></li>
+            <li><a href="#search" class="nav-link" data-section="search">Search</a></li>
+            <li><a href="#favorites" class="nav-link" data-section="favorites">Favorites</a></li>
+            <li><a href="#tracker" class="nav-link" data-section="tracker">Track_Application</a></li>
+            <li><a href="#stats" class="nav-link" data-section="stats">Statistics</a></li>
             <li><a href="#about" class="nav-link" data-section="about">About</a></li>
         </ul>
         <div class="hamburger">
@@ -176,6 +180,15 @@
             </form>
         </div>
 
+        <div class="export-controls hidden" id="exportControls">
+            <button class="btn-export" onclick="exportRecommendations('csv')">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </button>
+            <button class="btn-export" onclick="exportRecommendations('json')">
+                <i class="fas fa-file-code"></i> Export to JSON
+            </button>
+        </div>
+
         <div id="results" class="results-container"></div>
         
         <div id="priorityView" class="priority-container hidden">
@@ -246,6 +259,155 @@
         </div>
 
         <div id="comparisonResults" class="comparison-grid"></div>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="section hidden" id="search">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-search"></i> Search Schemes</h2>
+            <p>Search and filter through all available government schemes</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchQuery" placeholder="Search by scheme name, benefit, or keywords...">
+                <button onclick="performSearch()"><i class="fas fa-search"></i> Search</button>
+            </div>
+
+            <div class="filter-panel">
+                <h3><i class="fas fa-filter"></i> Filters</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>State</label>
+                        <select id="searchState">
+                            <option value="">All States</option>
+                            <option value="All">All India</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="searchCategory">
+                            <option value="">All Categories</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Business">Business</option>
+                            <option value="Education">Education</option>
+                            <option value="Health">Health</option>
+                            <option value="Housing">Housing</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-secondary" onclick="clearSearchFilters()">
+                    <i class="fas fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <div id="searchResults" class="results-container"></div>
+    </div>
+</section>
+
+<!-- Favorites Section -->
+<section class="section hidden" id="favorites">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-heart"></i> Your Favorite Schemes</h2>
+            <p>Schemes you've bookmarked for quick access</p>
+        </div>
+
+        <div class="favorites-controls">
+            <button class="btn-primary" onclick="loadFavorites()">
+                <i class="fas fa-sync-alt"></i> Refresh Favorites
+            </button>
+            <button class="btn-secondary" onclick="exportFavorites()">
+                <i class="fas fa-download"></i> Export Favorites
+            </button>
+        </div>
+
+        <div id="favoritesContainer" class="results-container">
+            <div class="info-message">
+                <i class="fas fa-heart"></i>
+                <p>No favorites yet. Add schemes to favorites from recommendations or search results!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Application Tracker Section -->
+<section class="section hidden" id="tracker">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-tasks"></i> Application Tracker</h2>
+            <p>Track your scheme applications and their status</p>
+        </div>
+
+        <div class="tracker-controls">
+            <button class="btn-primary" onclick="loadApplications()">
+                <i class="fas fa-sync-alt"></i> Refresh Applications
+            </button>
+            <button class="btn-secondary" onclick="showAddApplicationModal()">
+                <i class="fas fa-plus"></i> Add Application
+            </button>
+        </div>
+
+        <div class="tracker-stats">
+            <div class="stat-card">
+                <i class="fas fa-clipboard-list"></i>
+                <h4 id="trackerPlanned">0</h4>
+                <p>Planned</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-paper-plane"></i>
+                <h4 id="trackerApplied">0</h4>
+                <p>Applied</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-hourglass-half"></i>
+                <h4 id="trackerPending">0</h4>
+                <p>Pending</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <h4 id="trackerApproved">0</h4>
+                <p>Approved</p>
+            </div>
+        </div>
+
+        <div id="applicationsContainer" class="applications-grid">
+            <div class="info-message">
+                <i class="fas fa-clipboard-list"></i>
+                <p>No applications tracked yet. Start tracking your scheme applications!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="section hidden" id="stats">
+    <div class="container">
+        <div class="section-header">
+            <h2><i class="fas fa-chart-bar"></i> Scheme Statistics</h2>
+            <p>Comprehensive analytics of available government schemes</p>
+        </div>
+
+        <button class="btn-primary" onclick="loadStatistics()">
+            <i class="fas fa-sync-alt"></i> Load Statistics
+        </button>
+
+        <div id="statisticsContainer" class="stats-dashboard">
+            <div class="info-message">
+                <i class="fas fa-chart-line"></i>
+                <p>Click "Load Statistics" to view comprehensive scheme data and analytics</p>
+            </div>
+        </div>
     </div>
 </section>
 

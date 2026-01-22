@@ -175,6 +175,12 @@ function displayRecommendations(schemes) {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '<h3><i class="fas fa-list"></i> Your Recommended Schemes</h3>';
 
+    // Show export controls
+    const exportControls = document.getElementById('exportControls');
+    if (exportControls) {
+        exportControls.classList.remove('hidden');
+    }
+
     const grid = document.createElement('div');
     grid.className = 'scheme-grid';
 
@@ -1094,6 +1100,415 @@ function formatCurrency(amount) {
     }).format(amount);
 }
 
+// ===== SEARCH FUNCTIONALITY =====
+async function performSearch() {
+    const query = document.getElementById('searchQuery').value;
+    const state = document.getElementById('searchState').value;
+    const category = document.getElementById('searchCategory').value;
+    
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: query,
+                state: state,
+                category: category
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySearchResults(data.schemes);
+            showToast(`Found ${data.count} schemes`, 'success');
+        } else {
+            showToast(data.error || 'Search failed', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to search schemes', 'error');
+        console.error(error);
+    } finally {
+        hideLoading();
+    }
+}
+
+function displaySearchResults(schemes) {
+    const container = document.getElementById('searchResults');
+    
+    if (schemes.length === 0) {
+        container.innerHTML = '<div class="info-message"><i class="fas fa-search"></i><p>No schemes found matching your criteria</p></div>';
+        return;
+    }
+    
+    let html = `<div class="section-header"><h3>Found ${schemes.length} Schemes</h3></div><div class="scheme-grid">`;
+    
+    schemes.forEach(scheme => {
+        html += `
+            <div class="scheme-card">
+                <div class="scheme-header">
+                    <h3>${scheme.scheme_name}</h3>
+                    <button class="favorite-btn" onclick="toggleFavorite('${scheme.scheme_name}')">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+                <div class="scheme-details">
+                    <p><strong>Category:</strong> ${scheme.category}</p>
+                    <p><strong>State:</strong> ${scheme.state}</p>
+                    <p><strong>Benefit:</strong> ${scheme.benefit}</p>
+                    <p><strong>Income Range:</strong> ${formatCurrency(scheme.min_income)} - ${formatCurrency(scheme.max_income)}</p>
+                </div>
+                <button class="btn-details" onclick="showSchemeDetails('${scheme.scheme_name}')">
+                    View Details
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function clearSearchFilters() {
+    document.getElementById('searchQuery').value = '';
+    document.getElementById('searchState').value = '';
+    document.getElementById('searchCategory').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+}
+
+// ===== FAVORITES FUNCTIONALITY =====
+async function toggleFavorite(schemeName) {
+    try {
+        const response = await fetch(`${API_URL}/favorites?user_id=default_user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scheme_name: schemeName })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Added to favorites!', 'success');
+            // Update UI
+            const btn = event.target.closest('.favorite-btn');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-heart"></i>';
+                btn.style.color = '#e74c3c';
+            }
+        }
+    } catch (error) {
+        showToast('Failed to add to favorites', 'error');
+    }
+}
+
+async function loadFavorites() {
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}/favorites?user_id=default_user`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayFavorites(data.favorites);
+            showToast(`Loaded ${data.count} favorites`, 'success');
+        }
+    } catch (error) {
+        showToast('Failed to load favorites', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function displayFavorites(favorites) {
+    const container = document.getElementById('favoritesContainer');
+    
+    if (favorites.length === 0) {
+        container.innerHTML = '<div class="info-message"><i class="fas fa-heart"></i><p>No favorites yet</p></div>';
+        return;
+    }
+    
+    let html = `<div class="scheme-grid">`;
+    
+    favorites.forEach(schemeName => {
+        html += `
+            <div class="scheme-card">
+                <div class="scheme-header">
+                    <h3>${schemeName}</h3>
+                    <button class="favorite-btn active" onclick="removeFavorite('${schemeName}')">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <button class="btn-primary" onclick="showSchemeDetails('${schemeName}')">
+                    View Details
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function removeFavorite(schemeName) {
+    try {
+        const response = await fetch(`${API_URL}/favorites?user_id=default_user`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scheme_name: schemeName })
+        });
+        
+        if (response.ok) {
+            showToast('Removed from favorites', 'success');
+            loadFavorites();
+        }
+    } catch (error) {
+        showToast('Failed to remove from favorites', 'error');
+    }
+}
+
+async function exportFavorites() {
+    showToast('Exporting favorites...', 'info');
+    // Implementation for export
+}
+
+// ===== APPLICATION TRACKER =====
+async function loadApplications() {
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}/applications?user_id=default_user`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayApplications(data.applications);
+            updateTrackerStats(data.applications);
+            showToast(`Loaded ${data.count} applications`, 'success');
+        }
+    } catch (error) {
+        showToast('Failed to load applications', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function displayApplications(applications) {
+    const container = document.getElementById('applicationsContainer');
+    
+    if (applications.length === 0) {
+        container.innerHTML = '<div class="info-message"><i class="fas fa-clipboard-list"></i><p>No applications tracked</p></div>';
+        return;
+    }
+    
+    let html = '';
+    
+    applications.forEach(app => {
+        const statusClass = app.status.toLowerCase().replace(' ', '-');
+        html += `
+            <div class="application-card ${statusClass}">
+                <h4>${app.scheme_name}</h4>
+                <div class="app-details">
+                    <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${app.status}</span></p>
+                    ${app.applied_date ? `<p><strong>Applied:</strong> ${app.applied_date}</p>` : ''}
+                    ${app.notes ? `<p><strong>Notes:</strong> ${app.notes}</p>` : ''}
+                </div>
+                <div class="app-actions">
+                    <select onchange="updateApplicationStatus('${app.scheme_name}', this.value)">
+                        <option value="planned" ${app.status === 'planned' ? 'selected' : ''}>Planned</option>
+                        <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
+                        <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="approved" ${app.status === 'approved' ? 'selected' : ''}>Approved</option>
+                        <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                    </select>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function updateTrackerStats(applications) {
+    const stats = {
+        planned: 0,
+        applied: 0,
+        pending: 0,
+        approved: 0
+    };
+    
+    applications.forEach(app => {
+        if (stats[app.status] !== undefined) {
+            stats[app.status]++;
+        }
+    });
+    
+    document.getElementById('trackerPlanned').textContent = stats.planned;
+    document.getElementById('trackerApplied').textContent = stats.applied;
+    document.getElementById('trackerPending').textContent = stats.pending;
+    document.getElementById('trackerApproved').textContent = stats.approved;
+}
+
+async function updateApplicationStatus(schemeName, newStatus) {
+    try {
+        const response = await fetch(`${API_URL}/applications?user_id=default_user`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                scheme_name: schemeName,
+                status: newStatus
+            })
+        });
+        
+        if (response.ok) {
+            showToast('Status updated!', 'success');
+            loadApplications();
+        }
+    } catch (error) {
+        showToast('Failed to update status', 'error');
+    }
+}
+
+function showAddApplicationModal() {
+    showToast('Feature coming soon!', 'info');
+}
+
+// ===== STATISTICS FUNCTIONALITY =====
+async function loadStatistics() {
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}/statistics`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayStatistics(data.statistics);
+            showToast('Statistics loaded!', 'success');
+        }
+    } catch (error) {
+        showToast('Failed to load statistics', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function displayStatistics(stats) {
+    const container = document.getElementById('statisticsContainer');
+    
+    let html = `
+        <div class="stats-overview">
+            <div class="stat-card large">
+                <i class="fas fa-file-alt"></i>
+                <h3>${stats.total_schemes}</h3>
+                <p>Total Schemes</p>
+            </div>
+            <div class="stat-card large active">
+                <i class="fas fa-check-circle"></i>
+                <h3>${stats.active_schemes}</h3>
+                <p>Active Schemes</p>
+            </div>
+            <div class="stat-card large">
+                <i class="fas fa-pause-circle"></i>
+                <h3>${stats.inactive_schemes}</h3>
+                <p>Inactive Schemes</p>
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <h3><i class="fas fa-chart-pie"></i> Top Categories</h3>
+            <div class="category-stats">
+                ${stats.top_categories.map(([cat, count]) => `
+                    <div class="stat-bar">
+                        <span class="stat-label">${cat}</span>
+                        <div class="stat-progress">
+                            <div class="stat-fill" style="width: ${(count/stats.active_schemes)*100}%"></div>
+                        </div>
+                        <span class="stat-value">${count}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <h3><i class="fas fa-map-marker-alt"></i> Schemes by State</h3>
+            <div class="stats-grid">
+                ${Object.entries(stats.states).slice(0, 10).map(([state, count]) => `
+                    <div class="stat-item">
+                        <strong>${state}</strong>
+                        <span>${count} schemes</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <h3><i class="fas fa-rupee-sign"></i> Income Range Distribution</h3>
+            <div class="stats-grid">
+                ${Object.entries(stats.income_ranges).map(([range, count]) => `
+                    <div class="stat-item">
+                        <strong>${range}</strong>
+                        <span>${count} schemes</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// ===== EXPORT FUNCTIONALITY =====
+async function exportRecommendations(format = 'csv') {
+    if (currentRecommendations.length === 0) {
+        showToast('No recommendations to export', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/export`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                schemes: currentRecommendations,
+                format: format
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (format === 'csv') {
+                downloadCSV(data.data, 'scheme_recommendations.csv');
+            } else {
+                downloadJSON(data.data, 'scheme_recommendations.json');
+            }
+            showToast('Recommendations exported!', 'success');
+        }
+    } catch (error) {
+        showToast('Export failed', 'error');
+    }
+}
+
+function downloadCSV(csvContent, filename) {
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function downloadJSON(jsonData, filename) {
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
 // Make functions available globally
 window.navigateToSection = navigateToSection;
 window.toggleCompare = toggleCompare;
@@ -1107,3 +1522,14 @@ window.setIncomeChange = setIncomeChange;
 window.analyzeEligibilityChange = analyzeEligibilityChange;
 window.exportComparison = exportComparison;
 window.printComparison = printComparison;
+window.performSearch = performSearch;
+window.clearSearchFilters = clearSearchFilters;
+window.toggleFavorite = toggleFavorite;
+window.loadFavorites = loadFavorites;
+window.removeFavorite = removeFavorite;
+window.exportFavorites = exportFavorites;
+window.loadApplications = loadApplications;
+window.updateApplicationStatus = updateApplicationStatus;
+window.showAddApplicationModal = showAddApplicationModal;
+window.loadStatistics = loadStatistics;
+window.exportRecommendations = exportRecommendations;

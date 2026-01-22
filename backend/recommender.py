@@ -355,3 +355,119 @@ def get_best_scheme_recommendation(schemes, user_profile):
         "reason": "Most recently updated scheme",
         "score": None
     }
+
+
+def search_schemes(query, filters=None):
+    """
+    Search schemes by keyword with optional filters
+    
+    Args:
+        query: search keyword
+        filters: dict with state, category, min_income, max_income, caste_category
+    """
+    schemes = load_schemes()
+    results = []
+    
+    query_lower = query.lower() if query else ""
+    
+    for scheme in schemes:
+        if scheme["is_active"] != "Yes":
+            continue
+        
+        # Search in name, benefit, and description
+        searchable_text = (
+            scheme.get("scheme_name", "") + " " +
+            scheme.get("benefit", "") + " " +
+            scheme.get("category", "")
+        ).lower()
+        
+        if query and query_lower not in searchable_text:
+            continue
+        
+        # Apply filters
+        if filters:
+            if filters.get('state') and filters['state'] != 'All':
+                if scheme["state"] != "All" and scheme["state"] != filters['state']:
+                    continue
+            
+            if filters.get('category'):
+                if scheme["category"] != filters['category']:
+                    continue
+            
+            if filters.get('caste_category'):
+                caste_cat = filters['caste_category']
+                scheme_caste = scheme.get("caste_category", "All")
+                if scheme_caste != "All" and scheme_caste != caste_cat:
+                    continue
+            
+            if filters.get('min_income') is not None:
+                if int(scheme["max_income"]) < int(filters['min_income']):
+                    continue
+            
+            if filters.get('max_income') is not None:
+                if int(scheme["min_income"]) > int(filters['max_income']):
+                    continue
+        
+        results.append(scheme)
+    
+    return results
+
+
+def get_scheme_statistics():
+    """
+    Get comprehensive statistics about available schemes
+    """
+    schemes = load_schemes()
+    active_schemes = [s for s in schemes if s["is_active"] == "Yes"]
+    
+    # Count by category
+    categories = {}
+    for scheme in active_schemes:
+        cat = scheme.get("category", "Other")
+        categories[cat] = categories.get(cat, 0) + 1
+    
+    # Count by state
+    states = {}
+    for scheme in active_schemes:
+        state = scheme.get("state", "All")
+        states[state] = states.get(state, 0) + 1
+    
+    # Count by caste category
+    caste_categories = {}
+    for scheme in active_schemes:
+        caste = scheme.get("caste_category", "All")
+        caste_categories[caste] = caste_categories.get(caste, 0) + 1
+    
+    # Income range statistics
+    income_ranges = {
+        "0-100000": 0,
+        "100001-300000": 0,
+        "300001-500000": 0,
+        "500001-1000000": 0,
+        "1000000+": 0
+    }
+    
+    for scheme in active_schemes:
+        max_inc = int(scheme.get("max_income", 0))
+        if max_inc <= 100000:
+            income_ranges["0-100000"] += 1
+        elif max_inc <= 300000:
+            income_ranges["100001-300000"] += 1
+        elif max_inc <= 500000:
+            income_ranges["300001-500000"] += 1
+        elif max_inc <= 1000000:
+            income_ranges["500001-1000000"] += 1
+        else:
+            income_ranges["1000000+"] += 1
+    
+    return {
+        "total_schemes": len(schemes),
+        "active_schemes": len(active_schemes),
+        "inactive_schemes": len(schemes) - len(active_schemes),
+        "categories": categories,
+        "states": states,
+        "caste_categories": caste_categories,
+        "income_ranges": income_ranges,
+        "top_categories": sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
+    }
+

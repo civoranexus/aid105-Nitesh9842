@@ -1,23 +1,44 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from recommender import recommend_schemes, get_scheme_details, compare_schemes
+from recommender import recommend_schemes, get_scheme_details, compare_schemes, search_schemes, get_scheme_statistics
 from alerts import generate_alerts, check_eligibility_changes, get_deadline_alerts, get_new_schemes
+import json
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend connection
+
+# Storage for user data (in production, use a database)
+FAVORITES_FILE = os.path.join(os.path.dirname(__file__), 'user_favorites.json')
+APPLICATIONS_FILE = os.path.join(os.path.dirname(__file__), 'user_applications.json')
+
+def load_json_file(filepath):
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_json_file(filepath, data):
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
 
 @app.route('/')
 def home():
     """Home endpoint to verify server is running"""
     return jsonify({
         "name": "SchemeAssist AI Backend",
-        "version": "2.0",
+        "version": "3.0",
         "endpoints": {
             "health": "/api/health",
             "recommend": "/api/recommend",
             "alerts": "/api/alerts",
             "compare": "/api/compare",
-            "eligibility": "/api/eligibility"
+            "eligibility": "/api/eligibility",
+            "search": "/api/search",
+            "statistics": "/api/statistics",
+            "favorites": "/api/favorites",
+            "applications": "/api/applications",
+            "export": "/api/export"
         }
     })
 
@@ -155,6 +176,206 @@ def check_eligibility():
             "success": True,
             "eligibility_changes": result
         })
+        
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route('/api/search', methods=['POST'])
+def search():
+    """Search schemes with filters"""
+    try:
+        data = request.get_json()
+        
+        search_query = data.get('query', '')
+        filters = {
+            'state': data.get('state'),
+            'category': data.get('category'),
+            'min_income': data.get('min_income'),
+            'max_income': data.get('max_income'),
+            'caste_category': data.get('caste_category')
+        }
+        
+        results = search_schemes(search_query, filters)
+        
+        return jsonify({
+            "success": True,
+            "count": len(results),
+            "schemes": results
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route('/api/statistics', methods=['GET'])
+def get_statistics():
+    """Get scheme statistics and analytics"""
+    try:
+        stats = get_scheme_statistics()
+        
+        return jsonify({
+            "success": True,
+            "statistics": stats
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route('/api/favorites', methods=['GET', 'POST', 'DELETE'])
+def manage_favorites():
+    """Manage user favorite schemes"""
+    try:
+        favorites = load_json_file(FAVORITES_FILE)
+        user_id = request.args.get('user_id', 'default_user')
+        
+        if request.method == 'GET':
+            user_favorites = favorites.get(user_id, [])
+            return jsonify({
+                "success": True,
+                "favorites": user_favorites,
+                "count": len(user_favorites)
+            })
+        
+        elif request.method == 'POST':
+            data = request.get_json()
+            scheme_name = data.get('scheme_name')
+            
+            if not scheme_name:
+                return jsonify({"error": "scheme_name is required"}), 400
+            
+            if user_id not in favorites:
+                favorites[user_id] = []
+            
+            if scheme_name not in favorites[user_id]:
+                favorites[user_id].append(scheme_name)
+                save_json_file(FAVORITES_FILE, favorites)
+            
+            return jsonify({
+                "success": True,
+                "message": "Scheme added to favorites",
+                "favorites": favorites[user_id]
+            })
+        
+        elif request.method == 'DELETE':
+            data = request.get_json()
+            scheme_name = data.get('scheme_name')
+            
+            if user_id in favorites and scheme_name in favorites[user_id]:
+                favorites[user_id].remove(scheme_name)
+                save_json_file(FAVORITES_FILE, favorites)
+            
+            return jsonify({
+                "success": True,
+                "message": "Scheme removed from favorites",
+                "favorites": favorites.get(user_id, [])
+            })
+        
+        return jsonify({"error": "Invalid request method"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route('/api/applications', methods=['GET', 'POST', 'PUT'])
+def manage_applications():
+    """Track scheme application status"""
+    try:
+        applications = load_json_file(APPLICATIONS_FILE)
+        user_id = request.args.get('user_id', 'default_user')
+        
+        if request.method == 'GET':
+            user_apps = applications.get(user_id, [])
+            return jsonify({
+                "success": True,
+                "applications": user_apps,
+                "count": len(user_apps)
+            })
+        
+        elif request.method == 'POST':
+            data = request.get_json()
+            scheme_name = data.get('scheme_name')
+            status = data.get('status', 'planned')
+            
+            if not scheme_name:
+                return jsonify({"error": "scheme_name is required"}), 400
+            
+            if user_id not in applications:
+                applications[user_id] = []
+            
+            # Check if already exists
+            existing = next((app for app in applications[user_id] if app['scheme_name'] == scheme_name), None)
+            if not existing:
+                applications[user_id].append({
+                    "scheme_name": scheme_name,
+                    "status": status,
+                    "applied_date": data.get('applied_date', ''),
+                    "notes": data.get('notes', '')
+                })
+                save_json_file(APPLICATIONS_FILE, applications)
+            
+            return jsonify({
+                "success": True,
+                "message": "Application tracked",
+                "applications": applications[user_id]
+            })
+        
+        elif request.method == 'PUT':
+            data = request.get_json()
+            scheme_name = data.get('scheme_name')
+            status = data.get('status')
+            
+            if user_id in applications:
+                for app in applications[user_id]:
+                    if app['scheme_name'] == scheme_name:
+                        if status:
+                            app['status'] = status
+                        if 'notes' in data:
+                            app['notes'] = data['notes']
+                        if 'applied_date' in data:
+                            app['applied_date'] = data['applied_date']
+                        break
+                save_json_file(APPLICATIONS_FILE, applications)
+            
+            return jsonify({
+                "success": True,
+                "message": "Application updated",
+                "applications": applications.get(user_id, [])
+            })
+        
+        return jsonify({"error": "Invalid request method"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route('/api/export', methods=['POST'])
+def export_data():
+    """Export recommendations in various formats"""
+    try:
+        data = request.get_json()
+        schemes = data.get('schemes', [])
+        format_type = data.get('format', 'json')
+        
+        if format_type == 'csv':
+            # Create CSV formatted string
+            csv_data = "Scheme Name,Category,State,Benefit,Min Income,Max Income,Eligibility Score\n"
+            for scheme in schemes:
+                csv_data += f'"{scheme.get("scheme_name", "")}","{scheme.get("category", "")}","{scheme.get("state", "")}","{scheme.get("benefit", "")}",{scheme.get("min_income", 0)},{scheme.get("max_income", 0)},{scheme.get("eligibility_score", 0)}\n'
+            
+            return jsonify({
+                "success": True,
+                "data": csv_data,
+                "format": "csv"
+            })
+        
+        else:  # JSON format
+            return jsonify({
+                "success": True,
+                "data": schemes,
+                "format": "json"
+            })
         
     except Exception as e:
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
