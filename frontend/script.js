@@ -3,9 +3,35 @@ const API_URL = 'http://localhost:5000/api';
 
 // Global state
 let currentRecommendations = [];
+let searchResults = [];
 let userProfile = null;
 let selectedForComparison = [];
 let alertsCache = null;
+
+// Apply link mapping for schemes
+const APPLY_LINKS = {
+    // Central Government Portals
+    'default_central': 'https://www.india.gov.in/my-government/schemes',
+    'pmjay': 'https://pmjay.gov.in/apply',
+    'pmay': 'https://pmaymis.gov.in/',
+    'pm_kisan': 'https://pmkisan.gov.in/',
+    'ayushman_bharat': 'https://pmjay.gov.in/apply',
+    'sukanya_samriddhi': 'https://www.indiapost.gov.in/VAS/Pages/IndiaPostHome.aspx',
+    'mudra_yojana': 'https://www.udyamimitra.in/',
+    'startup_india': 'https://www.startupindia.gov.in/',
+    'standup_india': 'https://www.standupmitra.in/',
+    
+    // State portals - add more as needed
+    'maharashtra': 'https://aaplesarkar.mahaonline.gov.in/',
+    'karnataka': 'https://sevasindhu.karnataka.gov.in/',
+    'tamil_nadu': 'https://www.tn.gov.in/scheme',
+    'kerala': 'https://keralapsc.gov.in/',
+    'uttar_pradesh': 'https://edistrict.up.gov.in/',
+    'rajasthan': 'https://sso.rajasthan.gov.in/',
+    'gujarat': 'https://www.digitalgujarat.gov.in/',
+    'delhi': 'https://edistrict.delhigovt.nic.in/',
+    'west_bengal': 'https://wb.gov.in/portal/web/guest/schemes'
+};
 
 // ===== DOM READY =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -213,6 +239,9 @@ function createSchemeCard(scheme, index) {
             <i class="fas fa-users"></i> ${scheme.caste_category}
         </span>` : '';
 
+    // Generate apply link
+    const applyLink = generateApplyLink(scheme);
+
     card.innerHTML = `
         <div class="card-header">
             <h3>${scheme.scheme_name}</h3>
@@ -230,6 +259,9 @@ function createSchemeCard(scheme, index) {
             ${ageStatus}
         </div>
         <div class="card-actions">
+            <button class="btn-apply" onclick="window.open('${applyLink}', '_blank')">
+                <i class="fas fa-external-link-alt"></i> Apply Now
+            </button>
             <button class="btn-compare" onclick="toggleCompare(${index})" id="compare-btn-${index}">
                 <i class="fas fa-plus"></i> Compare
             </button>
@@ -248,9 +280,61 @@ function truncateText(text, maxLength) {
     return text.substring(0, maxLength) + '...';
 }
 
-function showSchemeDetails(index) {
-    const scheme = currentRecommendations[index];
-    if (!scheme) return;
+function generateApplyLink(scheme) {
+    const schemeName = scheme.scheme_name.toLowerCase();
+    const state = scheme.state ? scheme.state.toLowerCase().replace(/\s+/g, '_') : '';
+    
+    // Check for specific scheme matches
+    if (schemeName.includes('ayushman') || schemeName.includes('pmjay')) {
+        return APPLY_LINKS.ayushman_bharat;
+    } else if (schemeName.includes('pmay') || schemeName.includes('awas')) {
+        return APPLY_LINKS.pmay;
+    } else if (schemeName.includes('kisan')) {
+        return APPLY_LINKS.pm_kisan;
+    } else if (schemeName.includes('sukanya')) {
+        return APPLY_LINKS.sukanya_samriddhi;
+    } else if (schemeName.includes('mudra')) {
+        return APPLY_LINKS.mudra_yojana;
+    } else if (schemeName.includes('startup')) {
+        return APPLY_LINKS.startup_india;
+    } else if (schemeName.includes('stand up')) {
+        return APPLY_LINKS.standup_india;
+    }
+    
+    // Check for state-specific portals
+    if (state && APPLY_LINKS[state]) {
+        return APPLY_LINKS[state];
+    }
+    
+    // Check if it's a central scheme
+    if (scheme.level === 'Central' || scheme.state === 'All') {
+        return APPLY_LINKS.default_central;
+    }
+    
+    // Default to main government schemes portal
+    return APPLY_LINKS.default_central;
+}
+
+function showSchemeDetails(indexOrScheme) {
+    // Handle both index number and scheme object
+    let scheme;
+    if (typeof indexOrScheme === 'number') {
+        scheme = currentRecommendations[indexOrScheme];
+    } else if (typeof indexOrScheme === 'object') {
+        scheme = indexOrScheme;
+    } else {
+        // If it's a string (scheme name), find it in search results or recommendations
+        const schemeName = indexOrScheme;
+        scheme = searchResults.find(s => s.scheme_name === schemeName) || 
+                 currentRecommendations.find(s => s.scheme_name === schemeName);
+    }
+    
+    if (!scheme) {
+        showToast('Scheme details not found', 'error');
+        return;
+    }
+
+    const applyLink = generateApplyLink(scheme);
 
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -289,6 +373,11 @@ function showSchemeDetails(index) {
                     <span class="detail-label"><i class="fas fa-star"></i> Eligibility Score</span>
                     <span class="detail-value score-badge ${scheme.score >= 70 ? 'score-high' : scheme.score >= 40 ? 'score-medium' : 'score-low'}">${scheme.score}</span>
                 </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-apply" onclick="window.open('${applyLink}', '_blank')" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1rem;">
+                    <i class="fas fa-external-link-alt"></i> Apply for this Scheme
+                </button>
             </div>
         </div>
     `;
@@ -963,7 +1052,13 @@ function setIncomeChange(amount) {
 }
 
 async function analyzeEligibilityChange() {
-    const incomeChange = parseInt(document.getElementById('incomeChangeInput').value) || 0;
+    const incomeChangeInput = document.getElementById('incomeChangeInput');
+    if (!incomeChangeInput) {
+        showToast('Income change input not found', 'error');
+        return;
+    }
+    
+    const incomeChange = parseInt(incomeChangeInput.value) || 0;
     
     if (incomeChange === 0) {
         showToast('Please enter an income change amount', 'error');
@@ -971,14 +1066,22 @@ async function analyzeEligibilityChange() {
     }
 
     const resultsDiv = document.getElementById('eligibilityResults');
+    if (!resultsDiv) return;
+    
     resultsDiv.innerHTML = '<div class="loading-small"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>';
 
     try {
+        const newIncome = userProfile.income + incomeChange;
+        
         const response = await fetch(`${API_URL}/eligibility`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ...userProfile,
+                state: userProfile.state,
+                income: userProfile.income,
+                category: userProfile.category,
+                age: userProfile.age || 30,
+                caste_category: userProfile.caste_category || 'General',
                 income_change: incomeChange
             })
         });
@@ -987,21 +1090,32 @@ async function analyzeEligibilityChange() {
             const data = await response.json();
             if (data.success) {
                 displayEligibilityResults(data.eligibility_changes, resultsDiv);
+                showToast('Analysis complete!', 'success');
                 return;
+            } else {
+                throw new Error(data.error || 'Analysis failed');
             }
+        } else {
+            throw new Error('Server returned an error');
         }
-        
-        // Fallback
-        resultsDiv.innerHTML = `
-            <div class="eligibility-summary">
-                <p>Income change from ₹${userProfile.income.toLocaleString()} to ₹${(userProfile.income + incomeChange).toLocaleString()}</p>
-                <p class="info-text">Detailed analysis requires backend connection.</p>
-            </div>
-        `;
     } catch (error) {
+        console.error('Eligibility analysis error:', error);
+        
+        // Provide a more helpful fallback
+        const newIncome = userProfile.income + incomeChange;
+        const direction = incomeChange > 0 ? 'increase' : 'decrease';
+        
         resultsDiv.innerHTML = `
             <div class="eligibility-summary">
-                <p>Unable to fetch detailed analysis. Please ensure backend is running.</p>
+                <h4>Income Change Analysis</h4>
+                <p><strong>Current Income:</strong> ₹${userProfile.income.toLocaleString()}</p>
+                <p><strong>New Income:</strong> ₹${newIncome.toLocaleString()}</p>
+                <p><strong>Change:</strong> ${incomeChange > 0 ? '+' : ''}₹${incomeChange.toLocaleString()} (${direction})</p>
+                <div class="info-message" style="margin-top: 1rem;">
+                    <i class="fas fa-info-circle"></i>
+                    <p>For detailed eligibility analysis, please ensure the backend server is running.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Error: ${error.message}</p>
+                </div>
             </div>
         `;
     }
@@ -1138,6 +1252,9 @@ async function performSearch() {
 function displaySearchResults(schemes) {
     const container = document.getElementById('searchResults');
     
+    // Store search results globally
+    searchResults = schemes;
+    
     if (schemes.length === 0) {
         container.innerHTML = '<div class="info-message"><i class="fas fa-search"></i><p>No schemes found matching your criteria</p></div>';
         return;
@@ -1145,24 +1262,30 @@ function displaySearchResults(schemes) {
     
     let html = `<div class="section-header"><h3>Found ${schemes.length} Schemes</h3></div><div class="scheme-grid">`;
     
-    schemes.forEach(scheme => {
+    schemes.forEach((scheme, index) => {
+        const applyLink = generateApplyLink(scheme);
         html += `
             <div class="scheme-card">
                 <div class="scheme-header">
                     <h3>${scheme.scheme_name}</h3>
-                    <button class="favorite-btn" onclick="toggleFavorite('${scheme.scheme_name}')">
+                    <button class="favorite-btn" onclick="toggleFavorite('${scheme.scheme_name.replace(/'/g, "\\'")}')'>
                         <i class="far fa-heart"></i>
                     </button>
                 </div>
                 <div class="scheme-details">
                     <p><strong>Category:</strong> ${scheme.category}</p>
                     <p><strong>State:</strong> ${scheme.state}</p>
-                    <p><strong>Benefit:</strong> ${scheme.benefit}</p>
+                    <p><strong>Benefit:</strong> ${scheme.benefits || scheme.benefit || 'Various benefits'}</p>
                     <p><strong>Income Range:</strong> ${formatCurrency(scheme.min_income)} - ${formatCurrency(scheme.max_income)}</p>
                 </div>
-                <button class="btn-details" onclick="showSchemeDetails('${scheme.scheme_name}')">
-                    View Details
-                </button>
+                <div class="card-actions">
+                    <button class="btn-apply" onclick="window.open('${applyLink}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i> Apply
+                    </button>
+                    <button class="btn-details" onclick='showSearchSchemeDetails(${index})'>
+                        <i class="fas fa-info-circle"></i> Details
+                    </button>
+                </div>
             </div>
         `;
     });
@@ -1171,11 +1294,21 @@ function displaySearchResults(schemes) {
     container.innerHTML = html;
 }
 
+function showSearchSchemeDetails(index) {
+    const scheme = searchResults[index];
+    if (!scheme) {
+        showToast('Scheme details not found', 'error');
+        return;
+    }
+    showSchemeDetails(scheme);
+}
+
 function clearSearchFilters() {
     document.getElementById('searchQuery').value = '';
     document.getElementById('searchState').value = '';
     document.getElementById('searchCategory').value = '';
     document.getElementById('searchResults').innerHTML = '';
+    searchResults = [];
 }
 
 // ===== FAVORITES FUNCTIONALITY =====
