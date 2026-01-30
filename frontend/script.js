@@ -12,15 +12,89 @@ let alertsCache = null;
 const APPLY_LINKS = {
     // Central Government Portals
     'default_central': 'https://www.india.gov.in/my-government/schemes',
-    'pmjay': 'https://pmjay.gov.in/apply',
-    'pmay': 'https://pmaymis.gov.in/',
     'pm_kisan': 'https://pmkisan.gov.in/',
-    'ayushman_bharat': 'https://pmjay.gov.in/apply',
-    'sukanya_samriddhi': 'https://www.indiapost.gov.in/VAS/Pages/IndiaPostHome.aspx',
-    'mudra_yojana': 'https://www.udyamimitra.in/',
-    'startup_india': 'https://www.startupindia.gov.in/',
+    'pmayg': 'https://pmayg.nic.in/',
+    'pmaymis': 'https://pmaymis.gov.in/',
+    'ayushman_bharat': 'https://beneficiary.nha.gov.in/',
+    'pmjdy': 'https://pmjdy.gov.in/',
+    'mudra_yojana': 'https://www.mudra.org.in/',
     'standup_india': 'https://www.standupmitra.in/',
-    
+    'pmsby': 'https://jansuraksha.gov.in/',
+    'pmjjby': 'https://jansuraksha.gov.in/',
+    'apy': 'https://www.npscra.nsdl.co.in/',
+    'nps': 'https://enps.nsdl.com/',
+    'ppf': 'https://www.indiapost.gov.in/',
+    'sukanya_samriddhi': 'https://www.indiapost.gov.in/',
+    'maandhan': 'https://maandhan.in/',
+    'swayam': 'https://swayam.gov.in/',
+    'skill_india': 'https://www.skillindia.gov.in/',
+    'make_in_india': 'https://www.makeinindia.com/',
+    'digital_india': 'https://www.digitalindia.gov.in/',
+    'startup_india': 'https://www.startupindia.gov.in/',
+    'ncs': 'https://www.ncs.gov.in/',
+    'mgnrega': 'https://nrega.nic.in/',
+    'pmgsy': 'https://pmgsy.nic.in/',
+    'nrlm': 'https://aajeevika.gov.in/',
+    'nsap': 'https://nsap.nic.in/',
+    'ddugjy': 'https://ddugjy.gov.in/',
+    'pmfby': 'https://pmfby.gov.in/',
+    'nfsm': 'https://nfsn.mofpi.gov.in/',
+    'pm_dhan_dhaanya': 'https://www.agricoop.gov.in/',
+    'pmsvanidhi': 'https://pmsvanidhi.mohua.gov.in/',
+    'micro_enterprise_credit_card': 'https://www.mudra.org.in/',
+    'swamih_fund': 'https://www.swamih.co.in/',
+    'pm_vishwakarma': 'https://pmvishwakarma.gov.in/',
+    'pm_surya_ghar': 'https://pmsuryaghar.gov.in/',
+    'nam_ayush': 'https://namayush.gov.in/',
+    'beti_bachao': 'https://wcd.nic.in/',
+    'swachh_bharat': 'https://swachhbharatmission.gov.in/',
+    'ndlm': 'https://www.pmgdisha.in/',
+    'pm_poshan': 'https://pmposhan.education.gov.in/',
+    'operation_greens': 'https://mofpi.gov.in/',
+    'ncap': 'https://moef.gov.in/',
+    'pm_cares_children': 'https://pmcaresforchildren.in/',
+    'pmkkky': 'https://www.mines.gov.in/',
+    'bio_energy_mission': 'https://mnre.gov.in/',
+    'nsp': 'https://scholarships.gov.in/',
+    'pmss': 'https://www.desw.gov.in/',
+    'kvpy': 'https://www.iisc.ac.in/',
+    'inspire': 'https://online-inspire.gov.in/',
+    'ntse': 'https://ncert.nic.in/',
+    'cbse_sgc': 'https://www.cbse.gov.in/',
+    'ugc': 'https://www.ugc.gov.in/',
+    'vidyasaarathi': 'https://www.vidyasaarathi.co.in/',
+    'lic': 'https://www.licindia.in/',
+    'hdfc_scholarship': 'https://www.hdfcbank.com/',
+    'jindal_scholarship': 'https://www.sitaramjindalfoundation.org/',
+    'ongc_scholarship': 'https://www.ongcindia.com/',
+    'pmksy': 'https://pmksy.gov.in/',
+    'soil_health_card': 'https://soilhealth.dac.gov.in/',
+    'enam': 'https://www.enam.gov.in/',
+    'pkvy': 'https://pgsindia-ncof.gov.in/',
+    'rkvy': 'https://rkvy.nic.in/',
+    'nmsa': 'https://nmsa.dac.gov.in/',
+    'aif': 'https://agriinfra.dac.gov.in/',
+    'ahidf': 'https://ahidf.udyamimitra.in/',
+    'dairy_fund': 'https://dahd.nic.in/',
+    'cgtmse': 'https://www.cgtmse.in/',
+    'pmegp': 'https://www.kviconline.gov.in/pmegpeportal/',
+    'sfurti': 'https://msme.gov.in/',
+    'msme_lean': 'https://msme.gov.in/',
+    'tufs': 'https://texmin.nic.in/',
+    'epcg': 'https://www.dgft.gov.in/',
+    'meis': 'https://www.dgft.gov.in/',
+    'msme_interest_subvention': 'https://msme.gov.in/',
+    'eclgs': 'https://www.ncgtc.in/',
+    'rsby': 'https://www.esic.gov.in/',
+    'jsy': 'https://nhm.gov.in/',
+    'pmsma': 'https://pmsma.nhp.gov.in/',
+    'indradhanush': 'https://nhm.gov.in/',
+    'nhm': 'https://nhm.gov.in/',
+    'pm_dialysis': 'https://nhm.gov.in/',
+    'nphce': 'https://nhm.gov.in/',
+    'rbsk': 'https://nhm.gov.in/',
+    'nikshay': 'https://nikshay.in/',
+    'nmhp': 'https://nhm.gov.in/',
     // State portals - add more as needed
     'maharashtra': 'https://aaplesarkar.mahaonline.gov.in/',
     'karnataka': 'https://sevasindhu.karnataka.gov.in/',
@@ -240,7 +314,8 @@ function createSchemeCard(scheme, index) {
         </span>` : '';
 
     // Generate apply link
-    const applyLink = generateApplyLink(scheme);
+    let applyLink = generateApplyLink(scheme);
+    let isValidLink = typeof applyLink === 'string' && applyLink.startsWith('http');
 
     card.innerHTML = `
         <div class="card-header">
@@ -259,8 +334,8 @@ function createSchemeCard(scheme, index) {
             ${ageStatus}
         </div>
         <div class="card-actions">
-            <button class="btn-apply" onclick="window.open('${applyLink}', '_blank')">
-                <i class="fas fa-external-link-alt"></i> Apply Now
+            <button class="btn-apply" onclick="${isValidLink ? `window.open('${applyLink}', '_blank')` : ''}" ${isValidLink ? '' : 'disabled style="opacity:0.6;cursor:not-allowed;"'}>
+                <i class="fas fa-external-link-alt"></i> ${isValidLink ? 'Apply Now' : 'No Link'}
             </button>
             <button class="btn-compare" onclick="toggleCompare(${index})" id="compare-btn-${index}">
                 <i class="fas fa-plus"></i> Compare
@@ -283,34 +358,112 @@ function truncateText(text, maxLength) {
 function generateApplyLink(scheme) {
     const schemeName = scheme.scheme_name.toLowerCase();
     const state = scheme.state ? scheme.state.toLowerCase().replace(/\s+/g, '_') : '';
-    
-    // Check for specific scheme matches
-    if (schemeName.includes('ayushman') || schemeName.includes('pmjay')) {
-        return APPLY_LINKS.ayushman_bharat;
-    } else if (schemeName.includes('pmay') || schemeName.includes('awas')) {
-        return APPLY_LINKS.pmay;
-    } else if (schemeName.includes('kisan')) {
-        return APPLY_LINKS.pm_kisan;
-    } else if (schemeName.includes('sukanya')) {
-        return APPLY_LINKS.sukanya_samriddhi;
-    } else if (schemeName.includes('mudra')) {
-        return APPLY_LINKS.mudra_yojana;
-    } else if (schemeName.includes('startup')) {
-        return APPLY_LINKS.startup_india;
-    } else if (schemeName.includes('stand up')) {
-        return APPLY_LINKS.standup_india;
+
+    // Map of keywords to APPLY_LINKS keys (ordered by specificity)
+    const keywordMap = [
+        { key: 'pm_kisan', keywords: ['pm kisan samman', 'pm kisan', 'kisan credit card', 'kcc'] },
+        { key: 'pmayg', keywords: ['pmayg', 'awas yojana gramin', 'pradhan mantri awas yojana (gramin)'] },
+        { key: 'pmaymis', keywords: ['pmaymis', 'awas yojana urban', 'pradhan mantri awas yojana (urban)'] },
+        { key: 'ayushman_bharat', keywords: ['ayushman', 'pmjay', 'pm-jay'] },
+        { key: 'pmjdy', keywords: ['jan dhan', 'pmjdy'] },
+        { key: 'mudra_yojana', keywords: ['mudra', 'micro-enterprise credit card'] },
+        { key: 'standup_india', keywords: ['stand up india', 'standup india'] },
+        { key: 'pmsby', keywords: ['suraksha bima', 'pmsby'] },
+        { key: 'pmjjby', keywords: ['jeevan jyoti', 'pmjjby'] },
+        { key: 'apy', keywords: ['atal pension', 'apy'] },
+        { key: 'nps', keywords: ['national pension scheme', 'nps'] },
+        { key: 'ppf', keywords: ['public provident fund', 'ppf'] },
+        { key: 'sukanya_samriddhi', keywords: ['sukanya samriddhi'] },
+        { key: 'maandhan', keywords: ['shram yogi maandhan', 'maandhan'] },
+        { key: 'swayam', keywords: ['swayam'] },
+        { key: 'skill_india', keywords: ['skill india'] },
+        { key: 'make_in_india', keywords: ['make in india'] },
+        { key: 'digital_india', keywords: ['digital india'] },
+        { key: 'startup_india', keywords: ['startup india'] },
+        { key: 'ncs', keywords: ['national career service', 'ncs job portal'] },
+        { key: 'mgnrega', keywords: ['mgnrega'] },
+        { key: 'pmgsy', keywords: ['gram sadak', 'pmgsy'] },
+        { key: 'nrlm', keywords: ['livelihood mission', 'nrlm'] },
+        { key: 'nsap', keywords: ['social assistance', 'nsap'] },
+        { key: 'ddugjy', keywords: ['jyoti yojana', 'ddugjy'] },
+        { key: 'pmfby', keywords: ['fasal bima', 'pmfby'] },
+        { key: 'nfsm', keywords: ['food security mission', 'nfsm'] },
+        { key: 'pm_dhan_dhaanya', keywords: ['dhan-dhaanya', 'krishi yojana'] },
+        { key: 'pmsvanidhi', keywords: ['svanidhi'] },
+        { key: 'swamih_fund', keywords: ['swamih'] },
+        { key: 'pm_vishwakarma', keywords: ['vishwakarma'] },
+        { key: 'pm_surya_ghar', keywords: ['surya ghar'] },
+        { key: 'nam_ayush', keywords: ['ayush mission'] },
+        { key: 'beti_bachao', keywords: ['beti bachao'] },
+        { key: 'swachh_bharat', keywords: ['swachh bharat'] },
+        { key: 'ndlm', keywords: ['digital literacy mission', 'ndlm'] },
+        { key: 'pm_poshan', keywords: ['pm poshan', 'mid day meal'] },
+        { key: 'operation_greens', keywords: ['operation greens'] },
+        { key: 'ncap', keywords: ['clean air programme', 'ncap'] },
+        { key: 'pm_cares_children', keywords: ['pm-cares for children'] },
+        { key: 'pmkkky', keywords: ['khanij kshetra', 'pmkkky'] },
+        { key: 'bio_energy_mission', keywords: ['bio-energy mission'] },
+        { key: 'nsp', keywords: ['scholarship', 'nsp', 'pragati', 'saksham', 'pre matric', 'post matric', 'merit-cum-means', 'begum hazrat mahal', 'central sector scholarship', 'aicte', 'ishan uday'] },
+        { key: 'pmss', keywords: ['prime minister’s scholarship', 'pmss'] },
+        { key: 'kvpy', keywords: ['kvpy'] },
+        { key: 'inspire', keywords: ['inspire'] },
+        { key: 'ntse', keywords: ['ntse'] },
+        { key: 'cbse_sgc', keywords: ['single girl child', 'cbse'] },
+        { key: 'ugc', keywords: ['ugc', 'indira gandhi', 'maulana azad', 'national fellowship', 'post graduate', 'pg professional'] },
+        { key: 'vidyasaarathi', keywords: ['vidyasaarathi'] },
+        { key: 'lic', keywords: ['lic golden jubilee'] },
+        { key: 'hdfc_scholarship', keywords: ['hdfc parivartan'] },
+        { key: 'jindal_scholarship', keywords: ['sitaram jindal'] },
+        { key: 'ongc_scholarship', keywords: ['ongc foundation'] },
+        { key: 'pmksy', keywords: ['sinchai', 'pmksy'] },
+        { key: 'soil_health_card', keywords: ['soil health card'] },
+        { key: 'enam', keywords: ['e-nam', 'enam'] },
+        { key: 'pkvy', keywords: ['paramparagat krishi', 'pkvy'] },
+        { key: 'rkvy', keywords: ['krishi vikas', 'rkvy'] },
+        { key: 'nmsa', keywords: ['sustainable agriculture', 'nmsa'] },
+        { key: 'aif', keywords: ['agriculture infrastructure fund', 'aif'] },
+        { key: 'ahidf', keywords: ['animal husbandry', 'ahidf'] },
+        { key: 'dairy_fund', keywords: ['dairy processing'] },
+        { key: 'cgtmse', keywords: ['cgtmse'] },
+        { key: 'pmegp', keywords: ['pmegp'] },
+        { key: 'sfurti', keywords: ['sfurti'] },
+        { key: 'msme_lean', keywords: ['lean scheme'] },
+        { key: 'tufs', keywords: ['technology upgradation fund', 'tufs'] },
+        { key: 'epcg', keywords: ['epcg'] },
+        { key: 'meis', keywords: ['meis'] },
+        { key: 'msme_interest_subvention', keywords: ['interest subvention'] },
+        { key: 'eclgs', keywords: ['eclgs'] },
+        { key: 'rsby', keywords: ['rsby'] },
+        { key: 'jsy', keywords: ['janani suraksha', 'jsy'] },
+        { key: 'pmsma', keywords: ['matritva abhiyan', 'pmsma'] },
+        { key: 'indradhanush', keywords: ['indradhanush'] },
+        { key: 'nhm', keywords: ['national health mission', 'nhm'] },
+        { key: 'pm_dialysis', keywords: ['dialysis'] },
+        { key: 'nphce', keywords: ['elderly', 'nphce'] },
+        { key: 'rbsk', keywords: ['bal swasthya', 'rbsk'] },
+        { key: 'nikshay', keywords: ['nikshay'] },
+        { key: 'nmhp', keywords: ['mental health', 'nmhp'] },
+    ];
+
+    // Try to match scheme name to a specific link
+    for (const map of keywordMap) {
+        for (const kw of map.keywords) {
+            if (schemeName.includes(kw)) {
+                if (APPLY_LINKS[map.key]) return APPLY_LINKS[map.key];
+            }
+        }
     }
-    
+
     // Check for state-specific portals
     if (state && APPLY_LINKS[state]) {
         return APPLY_LINKS[state];
     }
-    
+
     // Check if it's a central scheme
     if (scheme.level === 'Central' || scheme.state === 'All') {
         return APPLY_LINKS.default_central;
     }
-    
+
     // Default to main government schemes portal
     return APPLY_LINKS.default_central;
 }
@@ -920,13 +1073,26 @@ function createAlertElement(alert) {
                          alert.priority === 'high' ? 'priority' : 
                          alert.alert_type === 'deadline' ? 'deadline' :
                          alert.alert_type === 'update' ? 'update' : 'info';
-    
+
     const icon = alert.alert_type === 'deadline' ? 'clock' :
                 alert.alert_type === 'priority' ? 'exclamation-triangle' :
                 alert.alert_type === 'update' ? 'sync-alt' :
                 alert.alert_type === 'new' ? 'star' :
                 alert.alert_type === 'category_match' ? 'bookmark' : 'bell';
 
+    // Timestamp formatting
+    let timestamp = '';
+    if (alert.timestamp || alert.date || alert.deadline_info) {
+        const dateStr = alert.timestamp || alert.date || alert.deadline_info;
+        const dateObj = new Date(dateStr);
+        if (!isNaN(dateObj)) {
+            timestamp = `<span class="alert-timestamp"><i class='fas fa-clock'></i> ${dateObj.toLocaleString()}</span>`;
+        } else if (alert.deadline_info) {
+            timestamp = `<span class="alert-timestamp"><i class='fas fa-clock'></i> ${alert.deadline_info}</span>`;
+        }
+    }
+
+    // Mark as read/dismiss logic
     el.className = `alert-item ${priorityClass}`;
     el.innerHTML = `
         <div class="alert-icon">
@@ -936,12 +1102,15 @@ function createAlertElement(alert) {
             <div class="alert-header">
                 <h4>${alert.scheme_name}</h4>
                 <span class="alert-badge ${priorityClass}">${alert.priority || alert.alert_type}</span>
+                <button class="alert-dismiss" title="Dismiss" onclick="this.closest('.alert-item').remove()"><i class="fas fa-times"></i></button>
             </div>
-            <p class="alert-category"><i class="fas fa-tag"></i> ${alert.category}</p>
+            <p class="alert-category"><i class="fas fa-tag"></i> ${alert.category || ''}</p>
             <p class="alert-message">${alert.message || alert.reason || ''}</p>
             ${alert.benefits ? `<p class="alert-benefits"><i class="fas fa-gift"></i> ${alert.benefits}</p>` : ''}
             ${alert.deadline_info ? `<p class="alert-deadline"><i class="fas fa-calendar-alt"></i> ${alert.deadline_info}</p>` : ''}
             ${alert.action_required ? `<p class="alert-action"><i class="fas fa-hand-point-right"></i> ${alert.action_required}</p>` : ''}
+            ${timestamp}
+            <button class="alert-read-btn" onclick="this.closest('.alert-item').classList.add('read');this.remove();" title="Mark as Read"><i class="fas fa-check"></i> Mark as Read</button>
         </div>
     `;
     return el;
@@ -1264,6 +1433,7 @@ function displaySearchResults(schemes) {
     
     schemes.forEach((scheme, index) => {
         const applyLink = generateApplyLink(scheme);
+        const isValidLink = typeof applyLink === 'string' && applyLink.startsWith('http');
         html += `
             <div class="scheme-card">
                 <div class="scheme-header">
@@ -1279,8 +1449,8 @@ function displaySearchResults(schemes) {
                     <p><strong>Income Range:</strong> ${formatCurrency(scheme.min_income)} - ${formatCurrency(scheme.max_income)}</p>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-apply" onclick="window.open('${applyLink}', '_blank')">
-                        <i class="fas fa-external-link-alt"></i> Apply
+                    <button class="btn-apply" onclick="${isValidLink ? `window.open('${applyLink}', '_blank')` : ''}" ${isValidLink ? '' : 'disabled style=\"opacity:0.6;cursor:not-allowed;\"'}>
+                        <i class="fas fa-external-link-alt"></i> ${isValidLink ? 'Apply' : 'No Link'}
                     </button>
                     <button class="btn-details" onclick='showSearchSchemeDetails(${index})'>
                         <i class="fas fa-info-circle"></i> Details
