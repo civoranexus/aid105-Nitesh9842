@@ -4,9 +4,96 @@ from recommender import recommend_schemes, get_scheme_details, compare_schemes, 
 from alerts import generate_alerts, check_eligibility_changes, get_deadline_alerts, get_new_schemes
 import json
 import os
+import hashlib
+import secrets
+# Storage for user data (in production, use a database)
+USERS_FILE = os.path.join(os.path.dirname(__file__), 'users.json')
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def generate_token():
+    return secrets.token_hex(16)
+
+def load_users():
+    return load_json_file(USERS_FILE)
+
+def save_users(users):
+    save_json_file(USERS_FILE, users)
+
+def get_user_profile(username):
+    users = load_users()
+    return users.get(username, {}).get('profile', {})
+
+def update_user_profile(username, profile):
+    users = load_users()
+    if username in users:
+        users[username]['profile'] = profile
+        save_users(users)
+        return True
+    return False
+
+# --- AUTHENTICATION ENDPOINTS ---
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend connection
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'success': False, 'message': 'Username and password required.'}), 400
+    users = load_users()
+    if username in users:
+        return jsonify({'success': False, 'message': 'Username already exists.'}), 409
+    users[username] = {
+        'password': hash_password(password),
+        'profile': {},
+        'token': generate_token()
+    }
+    save_users(users)
+    return jsonify({'success': True, 'message': 'Registration successful.'})
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'success': False, 'message': 'Username and password required.'}), 400
+    users = load_users()
+    user = users.get(username)
+    if not user or user['password'] != hash_password(password):
+        return jsonify({'success': False, 'message': 'Invalid username or password.'}), 401
+    # Generate new token for session
+    user['token'] = generate_token()
+    users[username] = user
+    save_users(users)
+    return jsonify({'success': True, 'token': user['token'], 'message': 'Login successful.'})
+
+@app.route('/api/profile', methods=['GET', 'POST'])
+def profile():
+    token = request.headers.get('Authorization')
+    users = load_users()
+    username = None
+    for user, info in users.items():
+        if info.get('token') == token:
+            username = user
+            break
+    if not username:
+        response = jsonify({'success': False, 'message': 'Unauthorized'})
+        response.status_code = 401
+        return response
+    if request.method == 'GET':
+        return jsonify({'success': True, 'profile': users[username].get('profile', {})})
+    elif request.method == 'POST':
+        profile_data = request.get_json()
+        users[username]['profile'] = profile_data
+        save_users(users)
+        return jsonify({'success': True, 'message': 'Profile updated.'})
+    # Always return a response for all code paths
+    return jsonify({'success': False, 'message': 'Invalid request method.'}), 405
 
 # Storage for user data (in production, use a database)
 FAVORITES_FILE = os.path.join(os.path.dirname(__file__), 'user_favorites.json')

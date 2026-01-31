@@ -1,6 +1,87 @@
 // ===== CONFIGURATION =====
 const API_URL = 'http://localhost:5000/api';
 
+// ===== AUTHENTICATION HANDLER =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Login/Register logic for login.html
+    if (window.location.pathname.endsWith('login.html')) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const formError = document.getElementById('formError');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                formError.style.display = 'none';
+                if (!username || !password) {
+                    formError.textContent = 'Please enter both username and password.';
+                    formError.style.display = 'block';
+                    return;
+                }
+                fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('authToken', data.token);
+                        window.location.href = 'index.html';
+                    } else {
+                        formError.textContent = data.message || 'Invalid username or password.';
+                        formError.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    formError.textContent = 'Server error. Please try again.';
+                    formError.style.display = 'block';
+                });
+            });
+        }
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('regUsername').value.trim();
+                const password = document.getElementById('regPassword').value.trim();
+                formError.style.display = 'none';
+                if (!username || !password) {
+                    formError.textContent = 'Please enter both username and password.';
+                    formError.style.display = 'block';
+                    return;
+                }
+                fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        formError.textContent = 'Registration successful! You can now login.';
+                        formError.style.color = '#22C55E';
+                        formError.style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('toggleForm').click();
+                            formError.style.color = '#EF4444';
+                        }, 1200);
+                    } else {
+                        formError.textContent = data.message || 'Registration failed.';
+                        formError.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    formError.textContent = 'Server error. Please try again.';
+                    formError.style.display = 'block';
+                });
+            });
+        }
+    }
+});
+
 // Global state
 let currentRecommendations = [];
 let searchResults = [];

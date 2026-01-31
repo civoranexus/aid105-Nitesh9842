@@ -73,36 +73,116 @@
 </head>
 <body>
     <div class="login-container">
-        <h2>Login to SchemeAssist AI</h2>
+        <h2 id="formTitle">Login to SchemeAssist AI</h2>
         <form class="login-form" id="loginForm">
             <input type="text" id="username" placeholder="Username or Email" required>
             <input type="password" id="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+        <form class="login-form" id="registerForm" style="display:none;">
+            <input type="text" id="regUsername" placeholder="Choose a Username" required>
+            <input type="password" id="regPassword" placeholder="Choose a Password" required>
+            <button type="submit">Register</button>
+        </form>
         <div class="login-footer">
-            Don't have an account? <a href="#">Register</a>
+            <span id="toggleText">Don't have an account?</span> <a href="#" id="toggleForm">Register</a>
         </div>
-        <div id="loginError" style="color:#EF4444; text-align:center; margin-top:1rem; display:none;"></div>
+        <div id="formError" style="color:#EF4444; text-align:center; margin-top:1rem; display:none;"></div>
     </div>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // Toggle between login and registration forms
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const toggleForm = document.getElementById('toggleForm');
+        const formTitle = document.getElementById('formTitle');
+        const toggleText = document.getElementById('toggleText');
+        const formError = document.getElementById('formError');
+
+        toggleForm.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (loginForm.style.display !== 'none') {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'flex';
+                formTitle.textContent = 'Register for SchemeAssist AI';
+                toggleText.textContent = 'Already have an account?';
+                toggleForm.textContent = 'Login';
+                formError.style.display = 'none';
+            } else {
+                loginForm.style.display = 'flex';
+                registerForm.style.display = 'none';
+                formTitle.textContent = 'Login to SchemeAssist AI';
+                toggleText.textContent = "Don't have an account?";
+                toggleForm.textContent = 'Register';
+                formError.style.display = 'none';
+            }
+        });
+
+        loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.style.display = 'none';
+            formError.style.display = 'none';
             if (!username || !password) {
-                errorDiv.textContent = 'Please enter both username and password.';
-                errorDiv.style.display = 'block';
+                formError.textContent = 'Please enter both username and password.';
+                formError.style.display = 'block';
                 return;
             }
-            // Simulate login (replace with real API call)
-            if (username === 'admin' && password === 'admin') {
-                window.location.href = 'index.html';
-            } else {
-                errorDiv.textContent = 'Invalid username or password.';
-                errorDiv.style.display = 'block';
+            // TODO: Replace with real API call
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = 'profile.html';
+                } else {
+                    formError.textContent = data.message || 'Invalid username or password.';
+                    formError.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                formError.textContent = 'Server error. Please try again.';
+                formError.style.display = 'block';
+            });
+        });
+
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            formError.style.display = 'none';
+            if (!username || !password) {
+                formError.textContent = 'Please enter both username and password.';
+                formError.style.display = 'block';
+                return;
             }
+            // TODO: Replace with real API call
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    formError.textContent = 'Registration successful! You can now login.';
+                    formError.style.color = '#22C55E';
+                    formError.style.display = 'block';
+                    setTimeout(() => {
+                        toggleForm.click();
+                        formError.style.color = '#EF4444';
+                    }, 1200);
+                } else {
+                    formError.textContent = data.message || 'Registration failed.';
+                    formError.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                formError.textContent = 'Server error. Please try again.';
+                formError.style.display = 'block';
+            });
         });
     </script>
 </body>
