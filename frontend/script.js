@@ -1,8 +1,57 @@
 // ===== CONFIGURATION =====
 const API_URL = 'http://localhost:5000/api';
 
-// ===== AUTHENTICATION HANDLER =====
+// ===== AUTHENTICATION UI HANDLER =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in and update UI
+    const authToken = localStorage.getItem('authToken');
+    const username = localStorage.getItem('username');
+    const userDropdown = document.getElementById('userDropdown');
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const loginLink = document.getElementById('loginLink');
+    const userBtn = document.getElementById('userBtn');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const dropdownLogout = document.getElementById('dropdownLogout');
+
+    if (authToken && username && userDropdown && usernameDisplay && loginLink) {
+        // User is logged in
+        userDropdown.style.display = 'block';
+        usernameDisplay.textContent = username;
+        loginLink.style.display = 'none';
+
+        // Dropdown toggle handler
+        if (userBtn) {
+            userBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('active');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (userDropdown && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+
+        // Logout handler
+        if (dropdownLogout) {
+            dropdownLogout.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('username');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Auto-load recommendations based on user profile
+        loadUserProfileAndRecommend();
+    } else if (loginLink) {
+        // User is not logged in
+        if (userDropdown) userDropdown.style.display = 'none';
+        loginLink.style.display = 'inline';
+    }
+
     // Login/Register logic for login.html
     if (window.location.pathname.endsWith('login.html')) {
         const loginForm = document.getElementById('loginForm');
@@ -29,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('username', username);
                         window.location.href = 'index.html';
                     } else {
                         formError.textContent = data.message || 'Invalid username or password.';
@@ -88,6 +138,73 @@ let searchResults = [];
 let userProfile = null;
 let selectedForComparison = [];
 let alertsCache = null;
+
+// ===== AUTO-LOAD USER PROFILE AND RECOMMENDATIONS =====
+async function loadUserProfileAndRecommend() {
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) return;
+
+    try {
+        const response = await fetch(`${API_URL}/profile`, {
+            method: 'GET',
+            headers: { 'Authorization': authToken }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.profile) {
+                const profile = data.profile;
+                
+                // Check if profile has minimum required fields
+                if (profile.state && profile.income && profile.category) {
+                    // Store profile globally
+                    userProfile = profile;
+                    
+                    // Auto-fill recommendation form if it exists
+                    const stateInput = document.getElementById('state');
+                    const incomeInput = document.getElementById('income');
+                    const categoryInput = document.getElementById('category');
+                    const casteInput = document.getElementById('caste_category');
+                    const ageInput = document.getElementById('age');
+                    
+                    if (stateInput && incomeInput && categoryInput) {
+                        stateInput.value = profile.state || '';
+                        incomeInput.value = profile.income || '';
+                        categoryInput.value = profile.category || '';
+                        if (casteInput) casteInput.value = profile.caste_category || '';
+                        if (ageInput) ageInput.value = profile.age || '';
+                        
+                        // Show a welcome message with auto-recommendation option
+                        const welcomeMsg = document.createElement('div');
+                        welcomeMsg.className = 'auto-recommend-banner';
+                        welcomeMsg.innerHTML = `
+                            <div style="background: linear-gradient(135deg, #16808D 0%, #1B9AAA 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.75rem; margin: 1rem 0; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(22,128,141,0.3);">
+                                <div>
+                                    <i class="fas fa-user-check"></i>
+                                    <strong>Welcome back, ${localStorage.getItem('username')}!</strong>
+                                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.95;">Your profile is ready. Get instant recommendations!</p>
+                                </div>
+                                <button onclick="getRecommendations()" style="background: white; color: #16808D; border: none; padding: 0.7rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                                    <i class="fas fa-rocket"></i> Get Schemes
+                                </button>
+                            </div>
+                        `;
+                        
+                        const recommendSection = document.getElementById('recommend');
+                        if (recommendSection) {
+                            const formContainer = recommendSection.querySelector('.form-container');
+                            if (formContainer && !document.querySelector('.auto-recommend-banner')) {
+                                formContainer.insertBefore(welcomeMsg, formContainer.firstChild);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+    }
+}
 
 // Apply link mapping for schemes
 const APPLY_LINKS = {

@@ -127,8 +127,8 @@
                 formError.style.display = 'block';
                 return;
             }
-            // TODO: Replace with real API call
-            fetch('/api/login', {
+            // Real API call to backend
+            fetch('http://localhost:5000/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -136,14 +136,36 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = 'profile.html';
+                    // Store auth token in localStorage
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('username', username);
+                    // Check if profile is complete
+                    fetch('http://localhost:5000/api/profile', {
+                        method: 'GET',
+                        headers: { 'Authorization': data.token }
+                    })
+                    .then(res => res.json())
+                    .then(profileData => {
+                        const profile = profileData.profile || {};
+                        // Check if essential fields are filled
+                        if (!profile.state || !profile.income || !profile.category) {
+                            // Redirect to profile page to complete details
+                            window.location.href = 'profile.html?firstLogin=true';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    })
+                    .catch(() => {
+                        window.location.href = 'profile.html?firstLogin=true';
+                    });
                 } else {
                     formError.textContent = data.message || 'Invalid username or password.';
                     formError.style.display = 'block';
                 }
             })
-            .catch(() => {
-                formError.textContent = 'Server error. Please try again.';
+            .catch((error) => {
+                console.error('Login error:', error);
+                formError.textContent = 'Server error. Please make sure the backend is running.';
                 formError.style.display = 'block';
             });
         });
@@ -158,8 +180,8 @@
                 formError.style.display = 'block';
                 return;
             }
-            // TODO: Replace with real API call
-            fetch('/api/register', {
+            // Real API call to backend
+            fetch('http://localhost:5000/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -167,20 +189,33 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    formError.textContent = 'Registration successful! You can now login.';
+                    formError.textContent = 'Registration successful! Redirecting to profile setup...';
                     formError.style.color = '#22C55E';
                     formError.style.display = 'block';
+                    // Auto-login and redirect to profile
                     setTimeout(() => {
-                        toggleForm.click();
-                        formError.style.color = '#EF4444';
-                    }, 1200);
+                        fetch('http://localhost:5000/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password })
+                        })
+                        .then(res => res.json())
+                        .then(loginData => {
+                            if (loginData.success) {
+                                localStorage.setItem('authToken', loginData.token);
+                                localStorage.setItem('username', username);
+                                window.location.href = 'profile.html?firstLogin=true';
+                            }
+                        });
+                    }, 1000);
                 } else {
                     formError.textContent = data.message || 'Registration failed.';
                     formError.style.display = 'block';
                 }
             })
-            .catch(() => {
-                formError.textContent = 'Server error. Please try again.';
+            .catch((error) => {
+                console.error('Registration error:', error);
+                formError.textContent = 'Server error. Please make sure the backend is running.';
                 formError.style.display = 'block';
             });
         });

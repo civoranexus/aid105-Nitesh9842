@@ -26,10 +26,28 @@
             <li><a href="#compare" class="nav-link" data-section="compare">Compare</a></li>
             <li><a href="#search" class="nav-link" data-section="search">Search</a></li>
             <li><a href="#favorites" class="nav-link" data-section="favorites">Favorites</a></li>
-            <li><a href="#tracker" class="nav-link" data-section="tracker">Track_Application</a></li>
             <li><a href="#stats" class="nav-link" data-section="stats">Statistics</a></li>
             <li><a href="#about" class="nav-link" data-section="about">About</a></li>
         </ul>
+        <div class="user-actions">
+            <div class="user-dropdown" id="userDropdown" style="display:none;">
+                <button class="user-btn" id="userBtn">
+                    <i class="fas fa-user-circle"></i> <span id="usernameDisplay"></span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="profile.html" class="dropdown-item">
+                        <i class="fas fa-user-edit"></i> Profile
+                    </a>
+                    <a href="#" id="dropdownLogout" class="dropdown-item logout-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+            <a href="login.html" id="loginLink" style="padding: 0.5rem 1rem; background: #16808D; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+        </div>
         <div class="hamburger">
             <span></span>
             <span></span>
