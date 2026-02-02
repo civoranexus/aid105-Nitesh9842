@@ -1276,7 +1276,7 @@ body::before {
 
 .about-card.full-width {
     grid-column: 1 / -1;
-    background: #e6f4f7;
+    background: #7591979d;
     border-left-color: var(--accent-color);
 }
 
@@ -2799,5 +2799,281 @@ body::before {
     
     .stat-label {
         min-width: auto;
+    }
+}
+
+/* ===== PHASE 1 IMPROVEMENTS ===== */
+
+/* Loading Skeleton Styles */
+.skeleton-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.skeleton-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-header,
+.skeleton-line {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.skeleton-header {
+    height: 24px;
+    width: 70%;
+}
+
+.skeleton-line {
+    height: 16px;
+    width: 100%;
+}
+
+.skeleton-line.short {
+    width: 50%;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-to-top:hover {
+    background: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-top:active {
+    transform: translateY(-2px);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:focus {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+/* Form Validation & Error Messages */
+.error-message {
+    display: none;
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.form-group input.error,
+.form-group select.error {
+    border-color: var(--danger-color);
+    background-color: #fff5f5;
+}
+
+.form-group input.success,
+.form-group select.success {
+    border-color: var(--success-color);
+    background-color: #f0fdf4;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: 3px solid rgba(22, 128, 141, 0.3);
+    outline-offset: 2px;
+    border-color: var(--primary-color);
+}
+
+/* Improved Touch Targets (minimum 44px) */
+.nav-link,
+.btn-primary,
+.btn-secondary,
+.btn-export,
+.submit-btn,
+.cta-button,
+.user-btn,
+button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.hamburger {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+}
+
+.card-actions button,
+.scheme-card button {
+    min-height: 44px;
+    padding: 0.6rem 1.2rem;
+}
+
+/* Focus Indicators for Accessibility */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Skip to Main Content Link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 0 0 0.5rem 0;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Improved Form Feedback */
+.form-group {
+    position: relative;
+}
+
+.form-group .success-icon {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    color: var(--success-color);
+    display: none;
+}
+
+.form-group input.success ~ .success-icon,
+.form-group select.success ~ .success-icon {
+    display: block;
+}
+
+/* Loading State for Forms */
+.submit-btn:disabled,
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.submit-btn.loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile Touch Improvements */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+    }
+    
+    .nav-link {
+        padding: 1rem;
+        min-height: 48px;
+    }
+    
+    button,
+    .btn-primary,
+    .btn-secondary {
+        min-height: 48px;
+        font-size: 1rem;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .btn-primary,
+    .btn-secondary,
+    .cta-button {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .back-to-top {
+        transition: none;
     }
 }

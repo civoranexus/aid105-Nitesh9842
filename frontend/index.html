@@ -2,8 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SchemeAssist AI - Government Scheme Recommender</title>
+    <title>SchemeAssist AI - Government Scheme Recommender | AI-Powered Scheme Discovery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Discover personalized government schemes with AI. Get recommendations for agriculture, education, health, housing, and more. 3500+ schemes across India with 99% accuracy.">
+    <meta name="keywords" content="government schemes, india schemes, PM schemes, scholarship, agriculture schemes, education schemes, housing schemes, AI recommendations">
+    <meta name="author" content="SchemeAssist AI">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#16808D">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://schemeassist.ai/">
+    <meta property="og:title" content="SchemeAssist AI - Find Your Government Schemes">
+    <meta property="og:description" content="AI-powered platform to discover personalized government schemes. Access 3500+ schemes with smart recommendations.">
+    <meta property="og:image" content="assets/civora_logo.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://schemeassist.ai/">
+    <meta name="twitter:title" content="SchemeAssist AI - Government Scheme Discovery">
+    <meta name="twitter:description" content="Find personalized government schemes with AI-powered recommendations. 3500+ schemes available.">
+    <meta name="twitter:image" content="assets/civora_logo.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/civora_logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/civora_logo.png">
+    <link rel="apple-touch-icon" href="assets/civora_logo.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://schemeassist.ai/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,13 +42,13 @@
 <body>
 
 <!-- Navigation Bar -->
-<nav class="navbar">
+<nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-container">
         <div class="logo">
-            <img src="assets/civora_logo.png" alt="Civora Nexus logo">
+            <img src="assets/civora_logo.png" alt="SchemeAssist AI Logo - Government Scheme Recommender" width="150" height="50">
             <!-- <span>Civora Nexus</span> -->
         </div>
-        <ul class="nav-menu">
+        <ul class="nav-menu" role="menubar" aria-label="Main menu">
             <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
             <li><a href="#recommend" class="nav-link" data-section="recommend">Recommendations</a></li>
             <li><a href="#alerts" class="nav-link" data-section="alerts">Alerts</a></li>
@@ -48,22 +77,22 @@
                 <i class="fas fa-sign-in-alt"></i> Login
             </a>
         </div>
-        <div class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+        <button class="hamburger" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="nav-menu">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </button>
     </div>
 </nav>
 
 <!-- Hero Section -->
-<section class="hero" id="home">
+<section class="hero" id="home" role="banner">
     <div class="hero-content">
-        <h1><i class="fas fa-brain"></i> SchemeAssist AI</h1>
+        <h1><i class="fas fa-brain" aria-hidden="true"></i> SchemeAssist AI</h1>
         <p class="tagline">Intelligent Government Scheme Discovery Platform</p>
         <p class="description">Unlock access to personalized government schemes with AI-powered recommendations. Navigate through thousands of opportunities tailored specifically for your unique profile and needs.</p>
-        <button class="cta-button" onclick="navigateToSection('recommend')">
-            <i class="fas fa-rocket"></i> Explore Schemes Now
+        <button class="cta-button" onclick="navigateToSection('recommend')" aria-label="Explore government schemes now">
+            <i class="fas fa-rocket" aria-hidden="true"></i> Explore Schemes Now
         </button>
         <div class="stats">
             <div class="stat-item">
@@ -86,19 +115,19 @@
 </section>
 
 <!-- Recommendations Section -->
-<section class="section hidden" id="recommend">
+<section class="section hidden" id="recommend" role="region" aria-labelledby="recommend-heading">
     <div class="container">
         <div class="section-header">
-            <h2><i class="fas fa-search"></i> Find Your Schemes</h2>
+            <h2 id="recommend-heading"><i class="fas fa-search" aria-hidden="true"></i> Find Your Schemes</h2>
             <p>Enter your details to get personalized scheme recommendations</p>
         </div>
 
         <div class="form-container">
-            <form id="profileForm">
+            <form id="profileForm" novalidate aria-label="Profile information form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="state"><i class="fas fa-map-marker-alt"></i> State/Region</label>
-                        <select id="state" required>
+                        <label for="state"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> State/Region</label>
+                        <select id="state" required aria-required="true" aria-describedby="state-error" aria-invalid="false">
                             <option value="">Select your state</option>
                             <option value="All">All India</option>
                             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -133,16 +162,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="income"><i class="fas fa-rupee-sign"></i> Annual Income</label>
-                        <input type="number" id="income" placeholder="e.g., 150000" min="0" required>
-                        <small>Enter your annual household income in rupees</small>
+                        <label for="income"><i class="fas fa-rupee-sign" aria-hidden="true"></i> Annual Income</label>
+                        <input type="number" id="income" placeholder="e.g., 150000" min="0" required aria-required="true" aria-describedby="income-error income-help" aria-invalid="false">
+                        <small id="income-help">Enter your annual household income in rupees</small>
+                        <span class="error-message" id="income-error" role="alert"></span>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="category"><i class="fas fa-th-large"></i> Interest Category</label>
-                        <select id="category" required>
+                        <label for="category"><i class="fas fa-th-large" aria-hidden="true"></i> Interest Category</label>
+                        <select id="category" required aria-required="true" aria-describedby="category-error" aria-invalid="false">
                             <option value="">Select a category</option>
                             <option value="Agriculture">Agriculture</option>
                             <option value="Business">Business</option>
@@ -162,8 +192,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="caste_category"><i class="fas fa-users"></i> Caste Category</label>
-                        <select id="caste_category" required>
+                        <label for="caste_category"><i class="fas fa-users" aria-hidden="true"></i> Caste Category</label>
+                        <select id="caste_category" required aria-required="true" aria-describedby="caste-error" aria-invalid="false">
                             <option value="">Select caste category</option>
                             <option value="General">General</option>
                             <option value="OBC">OBC (Other Backward Class)</option>
@@ -176,8 +206,9 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="age"><i class="fas fa-user"></i> Age</label>
-                        <input type="number" id="age" placeholder="e.g., 35" min="0" max="120" required>
+                        <label for="age"><i class="fas fa-user" aria-hidden="true"></i> Age</label>
+                        <input type="number" id="age" placeholder="e.g., 35" min="0" max="120" required aria-required="true" aria-describedby="age-error" aria-invalid="false">
+                        <span class="error-message" id="age-error" role="alert"></span>
                     </div>
 
                     <div class="form-group">
@@ -192,10 +223,32 @@
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-search"></i> Find Schemes
+                <button type="submit" class="submit-btn" aria-label="Submit form to find matching schemes">
+                    <i class="fas fa-search" aria-hidden="true"></i> Find Schemes
                 </button>
             </form>
+        </div>
+
+        <!-- Loading Skeleton -->
+        <div id="resultsSkeleton" class="skeleton-container hidden" aria-busy="true" aria-live="polite">
+            <div class="skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+            </div>
+            <div class="skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+            </div>
+            <div class="skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+            </div>
         </div>
 
         <div class="export-controls hidden" id="exportControls">
@@ -592,7 +645,12 @@
 </div>
 
 <!-- Toast Notification -->
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Back to Top Button -->
+<button id="backToTop" class="back-to-top" aria-label="Scroll back to top" title="Back to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+</button>
 
 <script src="script.js"></script>
 </body>

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from recommender import recommend_schemes, get_scheme_details, compare_schemes, search_schemes, get_scheme_statistics
 from alerts import generate_alerts, check_eligibility_changes, get_deadline_alerts, get_new_schemes
@@ -34,7 +34,12 @@ def update_user_profile(username, profile):
 
 # --- AUTHENTICATION ENDPOINTS ---
 
-app = Flask(__name__)
+# Configure Flask app to serve frontend files
+frontend_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+app = Flask(__name__, 
+            template_folder=frontend_folder,
+            static_folder=frontend_folder,
+            static_url_path='')
 CORS(app)  # Enable CORS for frontend connection
 
 @app.route('/api/register', methods=['POST'])
@@ -109,9 +114,9 @@ def save_json_file(filepath, data):
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
 
-@app.route('/')
-def home():
-    """Home endpoint to verify server is running"""
+@app.route('/api')
+def api_info():
+    """API information endpoint"""
     return jsonify({
         "name": "SchemeAssist AI Backend",
         "version": "3.0",
@@ -128,6 +133,11 @@ def home():
             "export": "/api/export"
         }
     })
+
+@app.route('/')
+def home():
+    """Serve the index.html page"""
+    return render_template('index.html')
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

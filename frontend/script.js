@@ -1,8 +1,194 @@
 // ===== CONFIGURATION =====
 const API_URL = 'http://localhost:5000/api';
 
+// ===== PHASE 1 IMPROVEMENTS =====
+
+// Back to Top Button Functionality
+function initBackToTop() {
+    const backToTopBtn = document.getElementById('backToTop');
+    if (!backToTopBtn) return;
+
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+
+    // Smooth scroll to top
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// Form Validation
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return false;
+
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+
+    requiredFields.forEach(field => {
+        const errorId = field.getAttribute('aria-describedby')?.split(' ').find(id => id.includes('error'));
+        const errorElement = errorId ? document.getElementById(errorId) : null;
+
+        // Clear previous states
+        field.classList.remove('error', 'success');
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.classList.remove('show');
+        }
+
+        // Validate field
+        if (!field.value.trim()) {
+            showFieldError(field, errorElement, 'This field is required');
+            isValid = false;
+        } else if (field.type === 'number') {
+            const value = parseFloat(field.value);
+            const min = parseFloat(field.min);
+            const max = parseFloat(field.max);
+
+            if (min !== undefined && value < min) {
+                showFieldError(field, errorElement, `Minimum value is ${min}`);
+                isValid = false;
+            } else if (max !== undefined && value > max) {
+                showFieldError(field, errorElement, `Maximum value is ${max}`);
+                isValid = false;
+            } else {
+                showFieldSuccess(field);
+            }
+        } else {
+            showFieldSuccess(field);
+        }
+    });
+
+    return isValid;
+}
+
+function showFieldError(field, errorElement, message) {
+    field.classList.add('error');
+    field.setAttribute('aria-invalid', 'true');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+    }
+}
+
+function showFieldSuccess(field) {
+    field.classList.add('success');
+    field.setAttribute('aria-invalid', 'false');
+}
+
+// Real-time validation
+function initFormValidation() {
+    const form = document.getElementById('profileForm');
+    if (!form) return;
+
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', () => {
+            validateField(field);
+        });
+
+        field.addEventListener('input', () => {
+            if (field.classList.contains('error')) {
+                validateField(field);
+            }
+        });
+    });
+}
+
+function validateField(field) {
+    const errorId = field.getAttribute('aria-describedby')?.split(' ').find(id => id.includes('error'));
+    const errorElement = errorId ? document.getElementById(errorId) : null;
+
+    field.classList.remove('error', 'success');
+    if (errorElement) {
+        errorElement.textContent = '';
+        errorElement.classList.remove('show');
+    }
+
+    if (!field.value.trim()) {
+        showFieldError(field, errorElement, 'This field is required');
+        return false;
+    } else if (field.type === 'number') {
+        const value = parseFloat(field.value);
+        const min = parseFloat(field.min);
+        const max = parseFloat(field.max);
+
+        if (min !== undefined && value < min) {
+            showFieldError(field, errorElement, `Minimum value is ${min}`);
+            return false;
+        } else if (max !== undefined && value > max) {
+            showFieldError(field, errorElement, `Maximum value is ${max}`);
+            return false;
+        }
+    }
+
+    showFieldSuccess(field);
+    return true;
+}
+
+// Show/Hide Skeleton Loader
+function showSkeleton() {
+    const skeleton = document.getElementById('resultsSkeleton');
+    const results = document.getElementById('results');
+    if (skeleton) {
+        skeleton.classList.remove('hidden');
+        skeleton.setAttribute('aria-busy', 'true');
+    }
+    if (results) {
+        results.innerHTML = '';
+        results.classList.add('hidden');
+    }
+}
+
+function hideSkeleton() {
+    const skeleton = document.getElementById('resultsSkeleton');
+    const results = document.getElementById('results');
+    if (skeleton) {
+        skeleton.classList.add('hidden');
+        skeleton.setAttribute('aria-busy', 'false');
+    }
+    if (results) {
+        results.classList.remove('hidden');
+    }
+}
+
+// Improved Loading Overlay
+function showLoading(message = 'Loading...') {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        const textElement = overlay.querySelector('p');
+        if (textElement) textElement.textContent = message;
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-busy', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.setAttribute('aria-busy', 'false');
+        document.body.style.overflow = '';
+    }
+}
+
 // ===== AUTHENTICATION UI HANDLER =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Phase 1 improvements
+    initBackToTop();
+    initFormValidation();
+
     // Check if user is logged in and update UI
     const authToken = localStorage.getItem('authToken');
     const username = localStorage.getItem('username');
@@ -374,10 +560,20 @@ function setupMobileMenu() {
     const navMenu = document.querySelector('.nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    if (hamburger) {
+    if (hamburger && navMenu) {
         hamburger.addEventListener('click', function() {
+            const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+            
             navMenu.classList.toggle('active');
             hamburger.classList.toggle('active');
+            
+            // Update ARIA attributes
+            hamburger.setAttribute('aria-expanded', !isExpanded);
+            
+            // Trap focus in mobile menu when open
+            if (!isExpanded) {
+                navLinks[0]?.focus();
+            }
         });
     }
 
@@ -387,8 +583,21 @@ function setupMobileMenu() {
             navMenu.classList.remove('active');
             if (hamburger) {
                 hamburger.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
             }
         });
+    });
+    
+    // Close mobile menu with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            if (hamburger) {
+                hamburger.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+                hamburger.focus();
+            }
+        }
     });
 }
 
@@ -402,6 +611,12 @@ function setupFormHandler() {
 
 async function handleFormSubmit(e) {
     e.preventDefault();
+
+    // Validate form first
+    if (!validateForm('profileForm')) {
+        showToast('Please fix the errors in the form', 'error');
+        return;
+    }
 
     // Get form values
     const state = document.getElementById('state').value;
@@ -427,8 +642,15 @@ async function handleFormSubmit(e) {
         min_match_score: parseInt(min_match)
     };
 
-    // Show loading
-    showLoading();
+    // Show skeleton loader instead of loading overlay
+    showSkeleton();
+    
+    // Disable submit button
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+    }
 
     try {
         // Make API call
@@ -446,8 +668,12 @@ async function handleFormSubmit(e) {
 
         const data = await response.json();
 
-        // Hide loading
-        hideLoading();
+        // Hide skeleton and re-enable button
+        hideSkeleton();
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
 
         if (data.success && data.schemes.length > 0) {
             currentRecommendations = data.schemes;
@@ -461,7 +687,11 @@ async function handleFormSubmit(e) {
         }
 
     } catch (error) {
-        hideLoading();
+        hideSkeleton();
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
         console.error('Error:', error);
         displayError(error.message);
         showToast('Failed to fetch recommendations. Check if backend is running.', 'error');
@@ -1564,12 +1794,22 @@ function hideLoading() {
 
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
+    if (!toast) return;
+    
     toast.textContent = message;
     toast.className = `toast ${type} show`;
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     
+    // Auto-dismiss after 4 seconds
     setTimeout(() => {
         toast.classList.remove('show');
-    }, 3000);
+    }, 4000);
+    
+    // Allow manual dismiss
+    toast.onclick = () => {
+        toast.classList.remove('show');
+    };
 }
 
 // ===== UTILITY FUNCTIONS =====
