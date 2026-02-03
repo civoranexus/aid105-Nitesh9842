@@ -127,7 +127,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="state"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> State/Region</label>
-                        <select id="state" required aria-required="true" aria-describedby="state-error" aria-invalid="false">
+                        <select id="state" name="state" required aria-required="true" aria-describedby="state-error" aria-invalid="false">
                             <option value="">Select your state</option>
                             <option value="All">All India</option>
                             <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -163,7 +163,7 @@
 
                     <div class="form-group">
                         <label for="income"><i class="fas fa-rupee-sign" aria-hidden="true"></i> Annual Income</label>
-                        <input type="number" id="income" placeholder="e.g., 150000" min="0" required aria-required="true" aria-describedby="income-error income-help" aria-invalid="false">
+                        <input type="number" id="income" name="income" placeholder="e.g., 150000" min="0" required aria-required="true" aria-describedby="income-error income-help" aria-invalid="false">
                         <small id="income-help">Enter your annual household income in rupees</small>
                         <span class="error-message" id="income-error" role="alert"></span>
                     </div>
@@ -172,7 +172,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="category"><i class="fas fa-th-large" aria-hidden="true"></i> Interest Category</label>
-                        <select id="category" required aria-required="true" aria-describedby="category-error" aria-invalid="false">
+                        <select id="category" name="category" required aria-required="true" aria-describedby="category-error" aria-invalid="false">
                             <option value="">Select a category</option>
                             <option value="Agriculture">Agriculture</option>
                             <option value="Business">Business</option>
@@ -193,7 +193,7 @@
 
                     <div class="form-group">
                         <label for="caste_category"><i class="fas fa-users" aria-hidden="true"></i> Caste Category</label>
-                        <select id="caste_category" required aria-required="true" aria-describedby="caste-error" aria-invalid="false">
+                        <select id="caste_category" name="caste_category" required aria-required="true" aria-describedby="caste-error" aria-invalid="false">
                             <option value="">Select caste category</option>
                             <option value="General">General</option>
                             <option value="OBC">OBC (Other Backward Class)</option>
@@ -207,13 +207,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="age"><i class="fas fa-user" aria-hidden="true"></i> Age</label>
-                        <input type="number" id="age" placeholder="e.g., 35" min="0" max="120" required aria-required="true" aria-describedby="age-error" aria-invalid="false">
+                        <input type="number" id="age" name="age" placeholder="e.g., 35" min="0" max="120" required aria-required="true" aria-describedby="age-error" aria-invalid="false">
                         <span class="error-message" id="age-error" role="alert"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="min_match"><i class="fas fa-percentage"></i> Minimum Match %</label>
-                        <select id="min_match">
+                        <select id="min_match" name="min_match">
                             <option value="95">95% - 100% (Best Matches)</option>
                             <option value="90">90% - 100%</option>
                             <option value="80">80% - 100%</option>
@@ -652,6 +652,6 @@
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
 </button>
 
-<script src="script.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

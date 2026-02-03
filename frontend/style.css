@@ -2802,6 +2802,78 @@ body::before {
     }
 }
 
+/* ===== LAZY LOADING IMAGES ===== */
+img.lazy {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+img.lazy.loaded {
+    opacity: 1;
+}
+
+/* Blur-up effect for lazy loaded images */
+img[data-src] {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+}
+
+img[data-src]:not(.lazy) {
+    filter: blur(0);
+}
+
+/* ===== RATE LIMIT WARNING ===== */
+.rate-limit-warning {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    z-index: 9999;
+    display: none;
+    animation: slideInRight 0.3s ease;
+    font-weight: 500;
+}
+
+.rate-limit-warning.show {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rate-limit-warning i {
+    font-size: 1.25rem;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ===== SECURE INPUT STYLES ===== */
+input.secure,
+select.secure {
+    border: 2px solid var(--primary-color);
+    background: #f8f9fa;
+}
+
+input.sanitized::after {
+    content: '✓ Sanitized';
+    position: absolute;
+    right: 10px;
+    color: green;
+    font-size: 0.8rem;
+}
+
 /* ===== PHASE 1 IMPROVEMENTS ===== */
 
 /* Loading Skeleton Styles */
