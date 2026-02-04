@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, make_response
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from recommender import recommend_schemes, get_scheme_details, compare_schemes, search_schemes, get_scheme_statistics
 from alerts import generate_alerts, check_eligibility_changes, get_deadline_alerts, get_new_schemes
@@ -6,20 +6,8 @@ import json
 import os
 import hashlib
 import secrets
-from datetime import datetime, timedelta
 # Storage for user data (in production, use a database)
 USERS_FILE = os.path.join(os.path.dirname(__file__), 'users.json')
-
-def load_json_file(filepath):
-    if os.path.exists(filepath):
-        with open(filepath, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_json_file(filepath, data):
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=2)
-
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -52,15 +40,7 @@ app = Flask(__name__,
             template_folder=frontend_folder,
             static_folder=frontend_folder,
             static_url_path='')
-
-# Configure session security
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-
-CORS(app, supports_credentials=True, origins=['http://localhost:5000', 'http://127.0.0.1:5000'])  # Enable CORS with credentials
+CORS(app)  # Enable CORS for frontend connection
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -85,47 +65,17 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    
     if not username or not password:
         return jsonify({'success': False, 'message': 'Username and password required.'}), 400
-    
     users = load_users()
     user = users.get(username)
-    
     if not user or user['password'] != hash_password(password):
         return jsonify({'success': False, 'message': 'Invalid username or password.'}), 401
-    
     # Generate new token for session
-    token = generate_token()
-    user['token'] = token
+    user['token'] = generate_token()
     users[username] = user
     save_users(users)
-    
-    # Create response with httpOnly cookie
-    response = make_response(jsonify({
-        'success': True,
-        'message': 'Login successful.'
-    }))
-    
-    # Set httpOnly cookie with token
-    response.set_cookie(
-        'auth_token',
-        token,
-        httponly=True,
-        secure=False,  # Set to True in production with HTTPS
-        samesite='Lax',
-        max_age=86400  # 24 hours
-    )
-    
-    return response
-
-@app.route('/api/logout', methods=['POST'])
-def logout_route():
-    # Get token from httpOnly cookie
-    token = request.cookies.get('auth_token')
-    response = make_response(jsonify({'success': True, 'message': 'Logged out successfully.'}))
-    response.set_cookie('auth_token', '', expires=0, httponly=True)
-    return response
+    return jsonify({'success': True, 'token': user['token'], 'message': 'Login successful.'})
 
 @app.route('/api/profile', methods=['GET', 'POST'])
 def profile():
@@ -153,6 +103,16 @@ def profile():
 # Storage for user data (in production, use a database)
 FAVORITES_FILE = os.path.join(os.path.dirname(__file__), 'user_favorites.json')
 APPLICATIONS_FILE = os.path.join(os.path.dirname(__file__), 'user_applications.json')
+
+def load_json_file(filepath):
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_json_file(filepath, data):
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
 
 @app.route('/api')
 def api_info():

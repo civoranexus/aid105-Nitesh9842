@@ -1,4 +1,171 @@
-/* ===== EXTRA RESPONSIVE BREAKPOINTS ===== */
+/* ===== UNIVERSAL STYLES WITH CSS VARIABLES ===== */
+* {
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* ===== IMPROVED LOADING SKELETONS ===== */
+.skeleton-container {
+    padding: 2rem 0;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.skeleton-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.skeleton-header {
+    height: 24px;
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    width: 70%;
+}
+
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    width: 100%;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+.skeleton-line.medium {
+    width: 80%;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Skeleton for different content types */
+.skeleton-user-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.skeleton-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-user-info {
+    flex: 1;
+}
+
+.skeleton-name {
+    height: 18px;
+    width: 150px;
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 100px;
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+/* ===== CSS VARIABLES & DARK MODE ===== */
+:root {
+    --primary-color: #16808D;
+    --secondary-color: #2196F3;
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --danger-color: #f44336;
+    --info-color: #2196F3;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    /* Light theme (default) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #868e96;
+    --border-color: #dee2e6;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.15);
+    
+    /* Skeleton colors */
+    --skeleton-bg: #f2f2f2;
+    --skeleton-shine: #e0e0e0;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: #404040;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #808080;
+    --border-color: #404040;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-hover: rgba(0, 0, 0, 0.4);
+    
+    /* Dark skeleton colors */
+    --skeleton-bg: #2d2d2d;
+    --skeleton-shine: #404040;
+}
+
+/* Auto dark mode based on system preference */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #404040;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --text-muted: #808080;
+        --border-color: #404040;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --shadow-hover: rgba(0, 0, 0, 0.4);
+        --skeleton-bg: #2d2d2d;
+        --skeleton-shine: #404040;
+    }
+}
 @media (max-width: 480px) {
     .container, .form-container, .search-container, .stats-section, .about-card, .tech-stack, .modal-content {
         padding: 1rem !important;
@@ -2802,78 +2969,6 @@ body::before {
     }
 }
 
-/* ===== LAZY LOADING IMAGES ===== */
-img.lazy {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-img.lazy.loaded {
-    opacity: 1;
-}
-
-/* Blur-up effect for lazy loaded images */
-img[data-src] {
-    filter: blur(5px);
-    transition: filter 0.3s ease;
-}
-
-img[data-src]:not(.lazy) {
-    filter: blur(0);
-}
-
-/* ===== RATE LIMIT WARNING ===== */
-.rate-limit-warning {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
-    z-index: 9999;
-    display: none;
-    animation: slideInRight 0.3s ease;
-    font-weight: 500;
-}
-
-.rate-limit-warning.show {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.rate-limit-warning i {
-    font-size: 1.25rem;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* ===== SECURE INPUT STYLES ===== */
-input.secure,
-select.secure {
-    border: 2px solid var(--primary-color);
-    background: #f8f9fa;
-}
-
-input.sanitized::after {
-    content: '✓ Sanitized';
-    position: absolute;
-    right: 10px;
-    color: green;
-    font-size: 0.8rem;
-}
-
 /* ===== PHASE 1 IMPROVEMENTS ===== */
 
 /* Loading Skeleton Styles */
@@ -2982,6 +3077,208 @@ input.sanitized::after {
 .form-group input.error,
 .form-group select.error {
     border-color: var(--danger-color);
+    background-color: rgba(244, 67, 54, 0.1);
+    animation: inputShake 0.5s ease;
+}
+
+@keyframes inputShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+/* ===== DARK MODE TOGGLE ===== */
+.theme-toggle {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 1000;
+    background: #ffffff;
+    border: 2px solid #dee2e6;
+    border-radius: 50px;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle i {
+    font-size: 1.5rem;
+    color: #16808D;
+    transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .theme-toggle i {
+    color: #ffffff;
+}
+
+.theme-toggle .fa-sun {
+    display: none;
+}
+
+.theme-toggle .fa-moon {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .fa-sun {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .fa-moon {
+    display: none;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .navbar {
+    background: #2d2d2d;
+    border-bottom: 1px solid #404040;
+}
+
+[data-theme="dark"] .hero {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+[data-theme="dark"] .section {
+    background: #1a1a1a;
+}
+
+[data-theme="dark"] .container {
+    background: #2d2d2d;
+    border: 1px solid #404040;
+}
+
+[data-theme="dark"] .form-container {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select {
+    background: #404040;
+    border-color: #606060;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .skeleton-card {
+    background: #2d2d2d;
+    border-color: #404040;
+}
+
+[data-theme="dark"] .skeleton-header,
+[data-theme="dark"] .skeleton-line {
+    background: linear-gradient(90deg, #2d2d2d 25%, #404040 50%, #2d2d2d 75%);
+    background-size: 200% 100%;
+}
+
+/* Enhanced form validation feedback */
+.form-group.valid input,
+.form-group.valid select {
+    border-color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.form-group.error input,
+.form-group.error select {
+    border-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.05);
+    animation: inputShake 0.5s ease;
+}
+
+.field-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.field-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.field-message.error {
+    color: #f44336;
+}
+
+.field-message.success {
+    color: #4CAF50;
+}
+
+.field-message.warning {
+    color: #FF9800;
+}
+
+/* Enhanced skeleton loading */
+.skeleton-container {
+    padding: 2rem 0;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.skeleton-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-header {
+    height: 24px;
+    background: linear-gradient(90deg, #f2f2f2 25%, #e0e0e0 50%, #f2f2f2 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    width: 70%;
+}
+
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, #f2f2f2 25%, #e0e0e0 50%, #f2f2f2 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    width: 100%;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
     background-color: #fff5f5;
 }
 
