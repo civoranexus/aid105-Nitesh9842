@@ -1,1 +1,481 @@
-// Enhanced UI utilities with dark mode and improved UX\n\n/**\n * Theme Management\n */\nclass ThemeManager {\n    constructor() {\n        this.themes = {\n            LIGHT: 'light',\n            DARK: 'dark',\n            AUTO: 'auto'\n        };\n        \n        this.currentTheme = this.getStoredTheme() || this.themes.AUTO;\n        this.applyTheme();\n        this.initThemeToggle();\n        this.watchSystemTheme();\n    }\n    \n    getStoredTheme() {\n        return localStorage.getItem('theme');\n    }\n    \n    setStoredTheme(theme) {\n        localStorage.setItem('theme', theme);\n    }\n    \n    getSystemTheme() {\n        return window.matchMedia('(prefers-color-scheme: dark)').matches ? this.themes.DARK : this.themes.LIGHT;\n    }\n    \n    applyTheme() {\n        const themeToApply = this.currentTheme === this.themes.AUTO ? this.getSystemTheme() : this.currentTheme;\n        \n        document.documentElement.setAttribute('data-theme', themeToApply);\n        \n        // Update meta theme-color for mobile browsers\n        const metaThemeColor = document.querySelector('meta[name=\"theme-color\"]');\n        if (metaThemeColor) {\n            metaThemeColor.content = themeToApply === this.themes.DARK ? '#1a1a1a' : '#16808D';\n        }\n        \n        this.updateToggleIcon(themeToApply);\n    }\n    \n    updateToggleIcon(theme) {\n        const toggle = document.getElementById('themeToggle');\n        if (!toggle) return;\n        \n        const isDark = theme === this.themes.DARK;\n        toggle.classList.toggle('dark-mode', isDark);\n        toggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);\n        toggle.title = `Switch to ${isDark ? 'light' : 'dark'} mode`;\n    }\n    \n    toggleTheme() {\n        if (this.currentTheme === this.themes.AUTO) {\n            // If auto, switch to opposite of current system theme\n            this.currentTheme = this.getSystemTheme() === this.themes.DARK ? this.themes.LIGHT : this.themes.DARK;\n        } else {\n            // Toggle between light and dark\n            this.currentTheme = this.currentTheme === this.themes.DARK ? this.themes.LIGHT : this.themes.DARK;\n        }\n        \n        this.setStoredTheme(this.currentTheme);\n        this.applyTheme();\n        \n        // Dispatch custom event for other components\n        window.dispatchEvent(new CustomEvent('themeChanged', {\n            detail: { theme: this.currentTheme }\n        }));\n    }\n    \n    initThemeToggle() {\n        const toggle = document.getElementById('themeToggle');\n        if (!toggle) return;\n        \n        toggle.addEventListener('click', () => {\n            this.toggleTheme();\n            \n            // Add animation\n            toggle.style.transform = 'translateY(-50%) scale(0.8)';\n            setTimeout(() => {\n                toggle.style.transform = 'translateY(-50%) scale(1)';\n            }, 150);\n        });\n        \n        // Keyboard support\n        toggle.addEventListener('keydown', (e) => {\n            if (e.key === 'Enter' || e.key === ' ') {\n                e.preventDefault();\n                this.toggleTheme();\n            }\n        });\n    }\n    \n    watchSystemTheme() {\n        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');\n        mediaQuery.addListener(() => {\n            if (this.currentTheme === this.themes.AUTO) {\n                this.applyTheme();\n            }\n        });\n    }\n}\n\n/**\n * Enhanced Toast Notifications\n */\nclass ToastManager {\n    constructor() {\n        this.container = this.createContainer();\n        this.toasts = new Map();\n    }\n    \n    createContainer() {\n        let container = document.getElementById('toast-container');\n        if (!container) {\n            container = document.createElement('div');\n            container.id = 'toast-container';\n            container.className = 'toast-container';\n            container.setAttribute('aria-live', 'polite');\n            container.setAttribute('aria-atomic', 'false');\n            document.body.appendChild(container);\n        }\n        return container;\n    }\n    \n    show(message, type = 'info', duration = 4000, actions = []) {\n        const id = Date.now() + Math.random();\n        const toast = this.createToast(id, message, type, duration, actions);\n        \n        this.container.appendChild(toast);\n        this.toasts.set(id, toast);\n        \n        // Animate in\n        requestAnimationFrame(() => {\n            toast.classList.add('show');\n        });\n        \n        // Auto remove\n        if (duration > 0) {\n            setTimeout(() => {\n                this.hide(id);\n            }, duration);\n        }\n        \n        return id;\n    }\n    \n    createToast(id, message, type, duration, actions) {\n        const toast = document.createElement('div');\n        toast.className = `toast toast-${type}`;\n        toast.setAttribute('role', 'status');\n        toast.setAttribute('aria-live', 'polite');\n        \n        const icon = this.getIcon(type);\n        \n        toast.innerHTML = `\n            <div class=\"toast-content\">\n                <div class=\"toast-icon\">\n                    <i class=\"fas fa-${icon}\"></i>\n                </div>\n                <div class=\"toast-message\">${message}</div>\n                <div class=\"toast-actions\">\n                    ${actions.map(action => `\n                        <button class=\"toast-action\" data-action=\"${action.key}\">\n                            ${action.label}\n                        </button>\n                    `).join('')}\n                    <button class=\"toast-close\" aria-label=\"Close notification\">\n                        <i class=\"fas fa-times\"></i>\n                    </button>\n                </div>\n            </div>\n            ${duration > 0 ? `<div class=\"toast-progress\" style=\"animation-duration: ${duration}ms\"></div>` : ''}\n        `;\n        \n        // Add event listeners\n        const closeBtn = toast.querySelector('.toast-close');\n        closeBtn.addEventListener('click', () => this.hide(id));\n        \n        // Action buttons\n        const actionButtons = toast.querySelectorAll('.toast-action');\n        actionButtons.forEach(btn => {\n            btn.addEventListener('click', (e) => {\n                const action = actions.find(a => a.key === e.target.dataset.action);\n                if (action && action.handler) {\n                    action.handler();\n                }\n                this.hide(id);\n            });\n        });\n        \n        return toast;\n    }\n    \n    getIcon(type) {\n        const icons = {\n            success: 'check-circle',\n            error: 'exclamation-circle',\n            warning: 'exclamation-triangle',\n            info: 'info-circle',\n            loading: 'spinner fa-spin'\n        };\n        return icons[type] || icons.info;\n    }\n    \n    hide(id) {\n        const toast = this.toasts.get(id);\n        if (!toast) return;\n        \n        toast.classList.add('hide');\n        \n        setTimeout(() => {\n            if (toast.parentNode) {\n                toast.parentNode.removeChild(toast);\n            }\n            this.toasts.delete(id);\n        }, 300);\n    }\n    \n    clear() {\n        this.toasts.forEach((_, id) => this.hide(id));\n    }\n}\n\n/**\n * Enhanced Skeleton Loader\n */\nclass SkeletonLoader {\n    constructor() {\n        this.activeSkeletons = new Set();\n    }\n    \n    show(containerId, type = 'card', count = 3) {\n        const container = document.getElementById(containerId);\n        if (!container) return;\n        \n        container.innerHTML = '';\n        container.classList.remove('hidden');\n        container.setAttribute('aria-busy', 'true');\n        \n        const skeletonHTML = this.generateSkeleton(type, count);\n        container.innerHTML = skeletonHTML;\n        \n        this.activeSkeletons.add(containerId);\n        \n        // Announce to screen readers\n        this.announceLoading(container);\n    }\n    \n    hide(containerId) {\n        const container = document.getElementById(containerId);\n        if (!container) return;\n        \n        container.classList.add('hidden');\n        container.setAttribute('aria-busy', 'false');\n        container.innerHTML = '';\n        \n        this.activeSkeletons.delete(containerId);\n    }\n    \n    generateSkeleton(type, count) {\n        const templates = {\n            card: this.cardTemplate,\n            list: this.listTemplate,\n            profile: this.profileTemplate,\n            stats: this.statsTemplate\n        };\n        \n        const template = templates[type] || templates.card;\n        return Array.from({ length: count }, () => template()).join('');\n    }\n    \n    cardTemplate() {\n        return `\n            <div class=\"skeleton-card\">\n                <div class=\"skeleton-header\"></div>\n                <div class=\"skeleton-line\"></div>\n                <div class=\"skeleton-line short\"></div>\n                <div class=\"skeleton-line medium\"></div>\n                <div class=\"skeleton-actions\">\n                    <div class=\"skeleton-button\"></div>\n                    <div class=\"skeleton-button small\"></div>\n                </div>\n            </div>\n        `;\n    }\n    \n    listTemplate() {\n        return `\n            <div class=\"skeleton-list-item\">\n                <div class=\"skeleton-avatar\"></div>\n                <div class=\"skeleton-content\">\n                    <div class=\"skeleton-line medium\"></div>\n                    <div class=\"skeleton-line short\"></div>\n                </div>\n            </div>\n        `;\n    }\n    \n    profileTemplate() {\n        return `\n            <div class=\"skeleton-profile\">\n                <div class=\"skeleton-avatar large\"></div>\n                <div class=\"skeleton-profile-info\">\n                    <div class=\"skeleton-line large\"></div>\n                    <div class=\"skeleton-line medium\"></div>\n                    <div class=\"skeleton-line short\"></div>\n                </div>\n            </div>\n        `;\n    }\n    \n    statsTemplate() {\n        return `\n            <div class=\"skeleton-stat\">\n                <div class=\"skeleton-stat-number\"></div>\n                <div class=\"skeleton-line short\"></div>\n            </div>\n        `;\n    }\n    \n    announceLoading(container) {\n        const announcement = document.createElement('div');\n        announcement.setAttribute('aria-live', 'polite');\n        announcement.setAttribute('aria-atomic', 'true');\n        announcement.className = 'sr-only';\n        announcement.textContent = 'Loading content, please wait...';\n        \n        container.appendChild(announcement);\n        \n        setTimeout(() => {\n            if (announcement.parentNode) {\n                announcement.parentNode.removeChild(announcement);\n            }\n        }, 1000);\n    }\n}\n\n/**\n * Enhanced Lazy Loading\n */\nclass LazyLoader {\n    constructor(options = {}) {\n        this.options = {\n            rootMargin: '50px',\n            threshold: 0.1,\n            ...options\n        };\n        \n        this.observer = null;\n        this.init();\n    }\n    \n    init() {\n        if ('IntersectionObserver' in window) {\n            this.observer = new IntersectionObserver(\n                this.handleIntersection.bind(this),\n                this.options\n            );\n            \n            this.observeImages();\n            this.observeSections();\n        } else {\n            // Fallback: load all images immediately\n            this.loadAllImages();\n        }\n    }\n    \n    observeImages() {\n        const lazyImages = document.querySelectorAll('img[data-src]');\n        lazyImages.forEach(img => {\n            this.observer.observe(img);\n        });\n    }\n    \n    observeSections() {\n        const lazySections = document.querySelectorAll('[data-lazy-load]');\n        lazySections.forEach(section => {\n            this.observer.observe(section);\n        });\n    }\n    \n    handleIntersection(entries) {\n        entries.forEach(entry => {\n            if (entry.isIntersecting) {\n                if (entry.target.tagName === 'IMG') {\n                    this.loadImage(entry.target);\n                } else {\n                    this.loadSection(entry.target);\n                }\n                \n                this.observer.unobserve(entry.target);\n            }\n        });\n    }\n    \n    loadImage(img) {\n        const src = img.getAttribute('data-src');\n        if (!src) return;\n        \n        img.addEventListener('load', () => {\n            img.classList.add('loaded');\n            img.removeAttribute('data-src');\n        });\n        \n        img.addEventListener('error', () => {\n            img.classList.add('error');\n            img.src = 'data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect width=\"100\" height=\"100\" fill=\"%23f0f0f0\"/><text x=\"50\" y=\"50\" text-anchor=\"middle\" dy=\".3em\" font-family=\"Arial\" font-size=\"12\" fill=\"%23999\">Error</text></svg>';\n        });\n        \n        img.src = src;\n    }\n    \n    loadSection(section) {\n        const loadHandler = section.getAttribute('data-lazy-load');\n        if (loadHandler && window[loadHandler]) {\n            window[loadHandler](section);\n        }\n        \n        section.removeAttribute('data-lazy-load');\n        section.classList.add('lazy-loaded');\n    }\n    \n    loadAllImages() {\n        const lazyImages = document.querySelectorAll('img[data-src]');\n        lazyImages.forEach(img => {\n            this.loadImage(img);\n        });\n    }\n    \n    observe(element) {\n        if (this.observer) {\n            this.observer.observe(element);\n        }\n    }\n    \n    unobserve(element) {\n        if (this.observer) {\n            this.observer.unobserve(element);\n        }\n    }\n}\n\n// Initialize managers\nconst themeManager = new ThemeManager();\nconst toastManager = new ToastManager();\nconst skeletonLoader = new SkeletonLoader();\nconst lazyLoader = new LazyLoader();\n\n// Export for use in other modules\nexport {\n    ThemeManager,\n    ToastManager,\n    SkeletonLoader,\n    LazyLoader,\n    themeManager,\n    toastManager,\n    skeletonLoader,\n    lazyLoader\n};\n\n// Legacy global functions for backward compatibility\nwindow.showToast = (message, type, duration) => {\n    return toastManager.show(message, type, duration);\n};\n\nwindow.showSkeleton = (containerId, type, count) => {\n    return skeletonLoader.show(containerId, type, count);\n};\n\nwindow.hideSkeleton = (containerId) => {\n    return skeletonLoader.hide(containerId);\n};
+// Enhanced UI utilities with dark mode and improved UX
+
+/**
+ * Theme Management
+ */
+class ThemeManager {
+    constructor() {
+        this.themes = {
+            LIGHT: 'light',
+            DARK: 'dark',
+            AUTO: 'auto'
+        };
+        
+        this.currentTheme = this.getStoredTheme() || this.themes.AUTO;
+        this.applyTheme();
+        this.initThemeToggle();
+        this.watchSystemTheme();
+    }
+    
+    getStoredTheme() {
+        return localStorage.getItem('theme');
+    }
+    
+    setStoredTheme(theme) {
+        localStorage.setItem('theme', theme);
+    }
+    
+    getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? this.themes.DARK : this.themes.LIGHT;
+    }
+    
+    applyTheme() {
+        const themeToApply = this.currentTheme === this.themes.AUTO ? this.getSystemTheme() : this.currentTheme;
+        
+        document.documentElement.setAttribute('data-theme', themeToApply);
+        
+        // Update meta theme-color for mobile browsers
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            metaThemeColor.content = themeToApply === this.themes.DARK ? '#1a1a1a' : '#16808D';
+        }
+        
+        this.updateToggleIcon(themeToApply);
+    }
+    
+    updateToggleIcon(theme) {
+        const toggle = document.getElementById('themeToggle');
+        if (!toggle) return;
+        
+        const isDark = theme === this.themes.DARK;
+        toggle.classList.toggle('dark-mode', isDark);
+        toggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+        toggle.title = `Switch to ${isDark ? 'light' : 'dark'} mode`;
+    }
+    
+    toggleTheme() {
+        if (this.currentTheme === this.themes.AUTO) {
+            // If auto, switch to opposite of current system theme
+            this.currentTheme = this.getSystemTheme() === this.themes.DARK ? this.themes.LIGHT : this.themes.DARK;
+        } else {
+            // Toggle between light and dark
+            this.currentTheme = this.currentTheme === this.themes.DARK ? this.themes.LIGHT : this.themes.DARK;
+        }
+        
+        this.setStoredTheme(this.currentTheme);
+        this.applyTheme();
+        
+        // Dispatch custom event for other components
+        window.dispatchEvent(new CustomEvent('themeChanged', {
+            detail: { theme: this.currentTheme }
+        }));
+    }
+    
+    initThemeToggle() {
+        const toggle = document.getElementById('themeToggle');
+        if (!toggle) {
+            console.warn('Theme toggle button not found');
+            return;
+        }
+        
+        toggle.addEventListener('click', () => {
+            this.toggleTheme();
+            
+            // Add animation
+            toggle.style.transform = 'translateY(-50%) scale(0.8)';
+            setTimeout(() => {
+                toggle.style.transform = 'translateY(-50%) scale(1)';
+            }, 150);
+        });
+        
+        // Keyboard support
+        toggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.toggleTheme();
+            }
+        });
+        
+        console.log('Theme toggle initialized');
+    }
+    
+    watchSystemTheme() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addListener(() => {
+            if (this.currentTheme === this.themes.AUTO) {
+                this.applyTheme();
+            }
+        });
+    }
+}
+
+/**
+ * Enhanced Toast Notifications
+ */
+class ToastManager {
+    constructor() {
+        this.container = this.createContainer();
+        this.toasts = new Map();
+    }
+    
+    createContainer() {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            container.setAttribute('aria-live', 'polite');
+            container.setAttribute('aria-atomic', 'false');
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+    
+    show(message, type = 'info', duration = 4000, actions = []) {
+        const id = Date.now() + Math.random();
+        const toast = this.createToast(id, message, type, duration, actions);
+        
+        this.container.appendChild(toast);
+        this.toasts.set(id, toast);
+        
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+        
+        // Auto remove
+        if (duration > 0) {
+            setTimeout(() => {
+                this.hide(id);
+            }, duration);
+        }
+        
+        return id;
+    }
+    
+    createToast(id, message, type, duration, actions) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        
+        const icon = this.getIcon(type);
+        
+        toast.innerHTML = `
+            <div class="toast-content">
+                <div class="toast-icon">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="toast-message">${message}</div>
+                <div class="toast-actions">
+                    ${actions.map(action => `
+                        <button class="toast-action" data-action="${action.key}">
+                            ${action.label}
+                        </button>
+                    `).join('')}
+                    <button class="toast-close" aria-label="Close notification">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms"></div>` : ''}
+        `;
+        
+        // Add event listeners
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => this.hide(id));
+        
+        // Action buttons
+        const actionButtons = toast.querySelectorAll('.toast-action');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const action = actions.find(a => a.key === e.target.dataset.action);
+                if (action && action.handler) {
+                    action.handler();
+                }
+                this.hide(id);
+            });
+        });
+        
+        return toast;
+    }
+    
+    getIcon(type) {
+        const icons = {
+            success: 'check-circle',
+            error: 'exclamation-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle',
+            loading: 'spinner fa-spin'
+        };
+        return icons[type] || icons.info;
+    }
+    
+    hide(id) {
+        const toast = this.toasts.get(id);
+        if (!toast) return;
+        
+        toast.classList.add('hide');
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+            this.toasts.delete(id);
+        }, 300);
+    }
+    
+    clear() {
+        this.toasts.forEach((_, id) => this.hide(id));
+    }
+}
+
+/**
+ * Enhanced Skeleton Loader
+ */
+class SkeletonLoader {
+    constructor() {
+        this.activeSkeletons = new Set();
+    }
+    
+    show(containerId, type = 'card', count = 3) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        container.classList.remove('hidden');
+        container.setAttribute('aria-busy', 'true');
+        
+        const skeletonHTML = this.generateSkeleton(type, count);
+        container.innerHTML = skeletonHTML;
+        
+        this.activeSkeletons.add(containerId);
+        
+        // Announce to screen readers
+        this.announceLoading(container);
+    }
+    
+    hide(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.classList.add('hidden');
+        container.setAttribute('aria-busy', 'false');
+        container.innerHTML = '';
+        
+        this.activeSkeletons.delete(containerId);
+    }
+    
+    generateSkeleton(type, count) {
+        const templates = {
+            card: this.cardTemplate,
+            list: this.listTemplate,
+            profile: this.profileTemplate,
+            stats: this.statsTemplate
+        };
+        
+        const template = templates[type] || templates.card;
+        return Array.from({ length: count }, () => template()).join('');
+    }
+    
+    cardTemplate() {
+        return `
+            <div class="skeleton-card">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line medium"></div>
+                <div class="skeleton-actions">
+                    <div class="skeleton-button"></div>
+                    <div class="skeleton-button small"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    listTemplate() {
+        return `
+            <div class="skeleton-list-item">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    profileTemplate() {
+        return `
+            <div class="skeleton-profile">
+                <div class="skeleton-avatar large"></div>
+                <div class="skeleton-profile-info">
+                    <div class="skeleton-line large"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    statsTemplate() {
+        return `
+            <div class="skeleton-stat">
+                <div class="skeleton-stat-number"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        `;
+    }
+    
+    announceLoading(container) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'sr-only';
+        announcement.textContent = 'Loading content, please wait...';
+        
+        container.appendChild(announcement);
+        
+        setTimeout(() => {
+            if (announcement.parentNode) {
+                announcement.parentNode.removeChild(announcement);
+            }
+        }, 1000);
+    }
+}
+
+/**
+ * Enhanced Lazy Loading
+ */
+class LazyLoader {
+    constructor(options = {}) {
+        this.options = {
+            rootMargin: '50px',
+            threshold: 0.1,
+            ...options
+        };
+        
+        this.observer = null;
+        this.init();
+    }
+    
+    init() {
+        if ('IntersectionObserver' in window) {
+            this.observer = new IntersectionObserver(
+                this.handleIntersection.bind(this),
+                this.options
+            );
+            
+            this.observeImages();
+            this.observeSections();
+        } else {
+            // Fallback: load all images immediately
+            this.loadAllImages();
+        }
+    }
+    
+    observeImages() {
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => {
+            this.observer.observe(img);
+        });
+    }
+    
+    observeSections() {
+        const lazySections = document.querySelectorAll('[data-lazy-load]');
+        lazySections.forEach(section => {
+            this.observer.observe(section);
+        });
+    }
+    
+    handleIntersection(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                if (entry.target.tagName === 'IMG') {
+                    this.loadImage(entry.target);
+                } else {
+                    this.loadSection(entry.target);
+                }
+                
+                this.observer.unobserve(entry.target);
+            }
+        });
+    }
+    
+    loadImage(img) {
+        const src = img.getAttribute('data-src');
+        if (!src) return;
+        
+        img.addEventListener('load', () => {
+            img.classList.add('loaded');
+            img.removeAttribute('data-src');
+        });
+        
+        img.addEventListener('error', () => {
+            img.classList.add('error');
+            img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f0f0f0"/><text x="50" y="50" text-anchor="middle" dy=".3em" font-family="Arial" font-size="12" fill="%23999">Error</text></svg>';
+        });
+        
+        img.src = src;
+    }
+    
+    loadSection(section) {
+        const loadHandler = section.getAttribute('data-lazy-load');
+        if (loadHandler && window[loadHandler]) {
+            window[loadHandler](section);
+        }
+        
+        section.removeAttribute('data-lazy-load');
+        section.classList.add('lazy-loaded');
+    }
+    
+    loadAllImages() {
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => {
+            this.loadImage(img);
+        });
+    }
+    
+    observe(element) {
+        if (this.observer) {
+            this.observer.observe(element);
+        }
+    }
+    
+    unobserve(element) {
+        if (this.observer) {
+            this.observer.unobserve(element);
+        }
+    }
+}
+
+// Initialize managers
+const themeManager = new ThemeManager();
+const toastManager = new ToastManager();
+const skeletonLoader = new SkeletonLoader();
+const lazyLoader = new LazyLoader();
+
+// Export for use in other modules
+export {
+    ThemeManager,
+    ToastManager,
+    SkeletonLoader,
+    LazyLoader,
+    themeManager,
+    toastManager,
+    skeletonLoader,
+    lazyLoader
+};
+
+// Legacy global functions for backward compatibility
+window.showToast = (message, type, duration) => {
+    return toastManager.show(message, type, duration);
+};
+
+window.showSkeleton = (containerId, type, count) => {
+    return skeletonLoader.show(containerId, type, count);
+};
+
+window.hideSkeleton = (containerId) => {
+    return skeletonLoader.hide(containerId);
+};

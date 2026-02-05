@@ -1,1 +1,288 @@
-<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Offline - SchemeAssist AI</title>\n    <style>\n        :root {\n            --primary-color: #16808D;\n            --text-primary: #212529;\n            --text-secondary: #6c757d;\n            --bg-primary: #ffffff;\n            --bg-secondary: #f8f9fa;\n        }\n        \n        * {\n            box-sizing: border-box;\n            margin: 0;\n            padding: 0;\n        }\n        \n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n            min-height: 100vh;\n            display: flex;\n            align-items: center;\n            justify-content: center;\n            color: var(--text-primary);\n        }\n        \n        .offline-container {\n            background: var(--bg-primary);\n            border-radius: 20px;\n            padding: 3rem;\n            text-align: center;\n            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);\n            max-width: 500px;\n            margin: 1rem;\n        }\n        \n        .offline-icon {\n            font-size: 4rem;\n            color: var(--primary-color);\n            margin-bottom: 1.5rem;\n        }\n        \n        .offline-title {\n            font-size: 2rem;\n            font-weight: 700;\n            color: var(--text-primary);\n            margin-bottom: 1rem;\n        }\n        \n        .offline-message {\n            font-size: 1.1rem;\n            color: var(--text-secondary);\n            margin-bottom: 2rem;\n            line-height: 1.6;\n        }\n        \n        .offline-actions {\n            display: flex;\n            flex-direction: column;\n            gap: 1rem;\n        }\n        \n        .btn {\n            padding: 12px 24px;\n            border: none;\n            border-radius: 10px;\n            font-size: 1rem;\n            font-weight: 600;\n            cursor: pointer;\n            transition: all 0.3s ease;\n            text-decoration: none;\n            display: inline-flex;\n            align-items: center;\n            justify-content: center;\n            gap: 0.5rem;\n        }\n        \n        .btn-primary {\n            background: linear-gradient(135deg, var(--primary-color) 0%, #2196F3 100%);\n            color: white;\n        }\n        \n        .btn-primary:hover {\n            transform: translateY(-2px);\n            box-shadow: 0 8px 25px rgba(22, 128, 141, 0.3);\n        }\n        \n        .btn-secondary {\n            background: var(--bg-secondary);\n            color: var(--text-primary);\n            border: 2px solid #dee2e6;\n        }\n        \n        .btn-secondary:hover {\n            background: #e9ecef;\n        }\n        \n        .connection-status {\n            margin-top: 2rem;\n            padding: 1rem;\n            background: var(--bg-secondary);\n            border-radius: 10px;\n            font-size: 0.9rem;\n        }\n        \n        .status-indicator {\n            width: 12px;\n            height: 12px;\n            border-radius: 50%;\n            display: inline-block;\n            margin-right: 0.5rem;\n            background: #dc3545;\n            animation: pulse 2s infinite;\n        }\n        \n        .status-indicator.online {\n            background: #28a745;\n        }\n        \n        @keyframes pulse {\n            0%, 100% { opacity: 1; }\n            50% { opacity: 0.5; }\n        }\n        \n        .features-list {\n            text-align: left;\n            margin-top: 2rem;\n        }\n        \n        .features-list h3 {\n            color: var(--primary-color);\n            margin-bottom: 1rem;\n        }\n        \n        .features-list ul {\n            list-style: none;\n        }\n        \n        .features-list li {\n            padding: 0.5rem 0;\n            border-bottom: 1px solid #f0f0f0;\n        }\n        \n        .features-list li:last-child {\n            border-bottom: none;\n        }\n        \n        .features-list i {\n            color: var(--primary-color);\n            margin-right: 0.75rem;\n            width: 20px;\n        }\n        \n        @media (max-width: 480px) {\n            .offline-container {\n                padding: 2rem 1.5rem;\n            }\n            \n            .offline-title {\n                font-size: 1.5rem;\n            }\n            \n            .offline-actions {\n                flex-direction: column;\n            }\n        }\n    </style>\n</head>\n<body>\n    <div class=\"offline-container\">\n        <div class=\"offline-icon\">\n            <i class=\"fas fa-wifi\" style=\"opacity: 0.3;\"></i>\n        </div>\n        \n        <h1 class=\"offline-title\">You're Offline</h1>\n        \n        <p class=\"offline-message\">\n            It looks like you're not connected to the internet. Don't worry – you can still browse cached content and use some features of SchemeAssist AI.\n        </p>\n        \n        <div class=\"offline-actions\">\n            <button onclick=\"tryReconnect()\" class=\"btn btn-primary\">\n                <i class=\"fas fa-sync-alt\"></i>\n                Try Again\n            </button>\n            \n            <button onclick=\"goHome()\" class=\"btn btn-secondary\">\n                <i class=\"fas fa-home\"></i>\n                Go Home\n            </button>\n        </div>\n        \n        <div class=\"connection-status\">\n            <span class=\"status-indicator\" id=\"statusIndicator\"></span>\n            <span id=\"statusText\">Connection Status: Offline</span>\n        </div>\n        \n        <div class=\"features-list\">\n            <h3>Available Offline:</h3>\n            <ul>\n                <li><i class=\"fas fa-check\"></i> Browse cached scheme information</li>\n                <li><i class=\"fas fa-check\"></i> View previously loaded recommendations</li>\n                <li><i class=\"fas fa-check\"></i> Access saved favorites</li>\n                <li><i class=\"fas fa-check\"></i> Use the search functionality</li>\n                <li><i class=\"fas fa-check\"></i> Read about section and guides</li>\n            </ul>\n        </div>\n    </div>\n    \n    <script>\n        // Check connection status\n        function updateConnectionStatus() {\n            const indicator = document.getElementById('statusIndicator');\n            const text = document.getElementById('statusText');\n            \n            if (navigator.onLine) {\n                indicator.classList.add('online');\n                text.textContent = 'Connection Status: Online';\n            } else {\n                indicator.classList.remove('online');\n                text.textContent = 'Connection Status: Offline';\n            }\n        }\n        \n        // Try to reconnect\n        function tryReconnect() {\n            updateConnectionStatus();\n            \n            if (navigator.onLine) {\n                window.location.href = '/';\n            } else {\n                // Show temporary feedback\n                const btn = event.target;\n                const originalText = btn.innerHTML;\n                btn.innerHTML = '<i class=\"fas fa-times\"></i> Still Offline';\n                btn.style.background = '#dc3545';\n                \n                setTimeout(() => {\n                    btn.innerHTML = originalText;\n                    btn.style.background = '';\n                }, 2000);\n            }\n        }\n        \n        // Go to home page\n        function goHome() {\n            if (navigator.onLine) {\n                window.location.href = '/';\n            } else {\n                // Try to go to cached home page\n                window.location.href = '/index.html';\n            }\n        }\n        \n        // Listen for connection changes\n        window.addEventListener('online', updateConnectionStatus);\n        window.addEventListener('offline', updateConnectionStatus);\n        \n        // Initial status check\n        updateConnectionStatus();\n        \n        // Auto-retry connection every 5 seconds\n        setInterval(() => {\n            updateConnectionStatus();\n            if (navigator.onLine) {\n                // Automatically redirect when back online\n                setTimeout(() => {\n                    window.location.href = '/';\n                }, 1000);\n            }\n        }, 5000);\n    </script>\n    \n    <!-- Font Awesome (cached) -->\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js\"></script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - SchemeAssist AI</title>
+    <style>
+        :root {
+            --primary-color: #16808d;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .offline-container {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 1rem;
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .offline-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .offline-message {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .offline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #2196f3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(22, 128, 141, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .connection-status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .features-list {
+            text-align: left;
+            margin-top: 2rem;
+        }
+
+        .features-list h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .features-list ul {
+            list-style: none;
+        }
+
+        .features-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .features-list i {
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .offline-title {
+                font-size: 1.5rem;
+            }
+
+            .offline-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon" aria-hidden="true">
+            <i class="fas fa-wifi" style="opacity: 0.3;"></i>
+        </div>
+
+        <h1 class="offline-title">You're Offline</h1>
+
+        <p class="offline-message">
+            It looks like you're not connected to the internet. Don't worry - you can still
+            browse cached content and use some features of SchemeAssist AI.
+        </p>
+
+        <div class="offline-actions">
+            <button type="button" onclick="tryReconnect(this)" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i>
+                Try Again
+            </button>
+
+            <button type="button" onclick="goHome()" class="btn btn-secondary">
+                <i class="fas fa-home"></i>
+                Go Home
+            </button>
+        </div>
+
+        <div class="connection-status" role="status" aria-live="polite">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="statusText">Connection Status: Offline</span>
+        </div>
+
+        <div class="features-list">
+            <h3>Available Offline:</h3>
+            <ul>
+                <li><i class="fas fa-check"></i> Browse cached scheme information</li>
+                <li><i class="fas fa-check"></i> View previously loaded recommendations</li>
+                <li><i class="fas fa-check"></i> Access saved favorites</li>
+                <li><i class="fas fa-check"></i> Use the search functionality</li>
+                <li><i class="fas fa-check"></i> Read about section and guides</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateConnectionStatus() {
+            const indicator = document.getElementById("statusIndicator");
+            const text = document.getElementById("statusText");
+
+            if (!indicator || !text) {
+                return;
+            }
+
+            if (navigator.onLine) {
+                indicator.classList.add("online");
+                text.textContent = "Connection Status: Online";
+            } else {
+                indicator.classList.remove("online");
+                text.textContent = "Connection Status: Offline";
+            }
+        }
+
+        function tryReconnect(button) {
+            updateConnectionStatus();
+
+            if (navigator.onLine) {
+                window.location.href = "/";
+                return;
+            }
+
+            if (!button) {
+                return;
+            }
+
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-times"></i> Still Offline';
+            button.style.background = "#dc3545";
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = "";
+            }, 2000);
+        }
+
+        function goHome() {
+            if (navigator.onLine) {
+                window.location.href = "/";
+            } else {
+                window.location.href = "/index.html";
+            }
+        }
+
+        window.addEventListener("online", updateConnectionStatus);
+        window.addEventListener("offline", updateConnectionStatus);
+
+        updateConnectionStatus();
+
+        setInterval(() => {
+            updateConnectionStatus();
+            if (navigator.onLine) {
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1000);
+            }
+        }, 5000);
+    </script>
+
+    <!-- Font Awesome (cached) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>

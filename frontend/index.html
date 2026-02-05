@@ -33,11 +33,31 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://schemeassist.ai/">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SchemeAssist AI">
+    
+    <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" as="style">
+    
+    <!-- Load critical CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Defer non-critical CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 </head>
 <body>
 
@@ -45,7 +65,7 @@
 <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-container">
         <div class="logo">
-            <img src="assets/civora_logo.png" alt="SchemeAssist AI Logo - Government Scheme Recommender" width="150" height="50">
+            <img src="assets/civora_logo.png" alt="SchemeAssist AI Logo - Government Scheme Recommender" width="150" height="50" loading="eager">
             <!-- <span>Civora Nexus</span> -->
         </div>
         <ul class="nav-menu" role="menubar" aria-label="Main menu">
@@ -665,6 +685,40 @@
     <i class="fas fa-sun" aria-hidden="true"></i>
 </button>
 
-<script src="script.js"></script>
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" class="pwa-banner hidden" role="dialog" aria-labelledby="pwa-title">
+    <div class="pwa-content">
+        <i class="fas fa-download" aria-hidden="true"></i>
+        <div class="pwa-text">
+            <h4 id="pwa-title">Install SchemeAssist AI</h4>
+            <p>Get quick access to government schemes offline</p>
+        </div>
+        <div class="pwa-actions">
+            <button id="pwaInstallBtn" class="btn-primary">Install</button>
+            <button id="pwaDismissBtn" class="btn-secondary">Not now</button>
+        </div>
+    </div>
+</div>
+
+<!-- Initialize error boundary and lazy loading first -->
+<script type="module">
+    // Load error boundary and lazy loading immediately
+    import errorBoundary from './js/error-boundary.js';
+    import lazyLoadManager from './js/lazy-loader.js';
+    import { enhanceApp } from './js/app-enhanced.js';
+    
+    // Make available globally
+    window.errorBoundary = errorBoundary;
+    window.lazyLoadManager = lazyLoadManager;
+    
+    // Setup enhanced features
+    enhanceApp();
+    
+    console.log('✅ Error handling and lazy loading initialized');
+</script>
+
+<!-- Load main scripts with defer for better performance -->
+<script src="script.js" defer></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
