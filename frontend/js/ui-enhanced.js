@@ -72,31 +72,49 @@ class ThemeManager {
     }
     
     initThemeToggle() {
-        const toggle = document.getElementById('themeToggle');
-        if (!toggle) {
-            console.warn('Theme toggle button not found');
-            return;
-        }
-        
-        toggle.addEventListener('click', () => {
-            this.toggleTheme();
-            
-            // Add animation
-            toggle.style.transform = 'translateY(-50%) scale(0.8)';
-            setTimeout(() => {
-                toggle.style.transform = 'translateY(-50%) scale(1)';
-            }, 150);
-        });
-        
-        // Keyboard support
-        toggle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.toggleTheme();
+        // Retry finding the toggle button (may not be in DOM yet)
+        const attach = () => {
+            const toggle = document.getElementById('themeToggle');
+            if (!toggle) {
+                return false;
             }
-        });
+            
+            toggle.addEventListener('click', () => {
+                this.toggleTheme();
+                
+                // Add animation
+                toggle.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    toggle.style.transform = 'scale(1)';
+                }, 150);
+            });
+            
+            // Keyboard support
+            toggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.toggleTheme();
+                }
+            });
+            
+            // Apply current theme icon
+            this.updateToggleIcon(
+                this.currentTheme === this.themes.AUTO ? this.getSystemTheme() : this.currentTheme
+            );
+            
+            console.log('Theme toggle initialized');
+            return true;
+        };
         
-        console.log('Theme toggle initialized');
+        // Try immediately, or wait for DOM ready
+        if (!attach()) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => attach());
+            } else {
+                // DOM already loaded but element missing — try once more after a tick
+                setTimeout(() => attach(), 0);
+            }
+        }
     }
     
     watchSystemTheme() {

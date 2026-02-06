@@ -79,6 +79,11 @@
             <li><a href="#about" class="nav-link" data-section="about">About</a></li>
         </ul>
         <div class="user-actions">
+            <!-- Dark Mode Toggle -->
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+                <i class="fas fa-sun" aria-hidden="true"></i>
+            </button>
             <div class="user-dropdown" id="userDropdown" style="display:none;">
                 <button class="user-btn" id="userBtn">
                     <i class="fas fa-user-circle"></i> <span id="usernameDisplay"></span>
@@ -679,11 +684,7 @@
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
 </button>
 
-<!-- Dark Mode Toggle -->
-<button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
-    <i class="fas fa-moon" aria-hidden="true"></i>
-    <i class="fas fa-sun" aria-hidden="true"></i>
-</button>
+
 
 <!-- PWA Install Banner -->
 <div id="pwaInstallBanner" class="pwa-banner hidden" role="dialog" aria-labelledby="pwa-title">
@@ -720,5 +721,20 @@
 <!-- Load main scripts with defer for better performance -->
 <script src="script.js" defer></script>
 <script type="module" src="js/main.js"></script>
+
+<!-- Service Worker registration fallback (in case main.js module fails) -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js')
+                .then(function (reg) {
+                    console.log('[App] SW registered (fallback):', reg.scope);
+                })
+                .catch(function (err) {
+                    console.warn('[App] SW registration failed:', err);
+                });
+        });
+    }
+</script>
 </body>
 </html>

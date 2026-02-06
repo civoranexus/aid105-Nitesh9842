@@ -189,6 +189,46 @@ document.addEventListener('DOMContentLoaded', function() {
     initBackToTop();
     initFormValidation();
 
+    // ===== DARK MODE TOGGLE (inline fallback) =====
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle && !themeToggle._themeInitialized) {
+        // Apply saved theme immediately
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme && savedTheme !== 'auto') {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        themeToggle.addEventListener('click', function() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+
+            // Update meta theme-color
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.content = next === 'dark' ? '#1a1a1a' : '#16808D';
+
+            // Toggle icon visibility
+            const moonIcon = themeToggle.querySelector('.fa-moon');
+            const sunIcon = themeToggle.querySelector('.fa-sun');
+            if (moonIcon) moonIcon.style.display = next === 'dark' ? 'none' : 'inline-block';
+            if (sunIcon) sunIcon.style.display = next === 'dark' ? 'inline-block' : 'none';
+
+            // Animation
+            themeToggle.style.transform = 'scale(0.8)';
+            setTimeout(() => { themeToggle.style.transform = 'scale(1)'; }, 150);
+        });
+
+        // Set initial icon state
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const moonIcon = themeToggle.querySelector('.fa-moon');
+        const sunIcon = themeToggle.querySelector('.fa-sun');
+        if (moonIcon) moonIcon.style.display = currentTheme === 'dark' ? 'none' : 'inline-block';
+        if (sunIcon) sunIcon.style.display = currentTheme === 'dark' ? 'inline-block' : 'none';
+
+        themeToggle._themeInitialized = true;
+    }
+
     // Check if user is logged in and update UI
     const authToken = localStorage.getItem('authToken');
     const username = localStorage.getItem('username');

@@ -4,13 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offline - SchemeAssist AI</title>
+    <meta name="theme-color" content="#16808D">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/assets/civora_logo.png">
     <style>
         :root {
-            --primary-color: #16808d;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
+            --primary: #16808d;
+            --primary-light: #1a9baa;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --bg: #ffffff;
+            --bg-alt: #f8f9fa;
+            --border: #dee2e6;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary: #20b2c4;
+            --primary-light: #2dd4e8;
+            --text: #e4e6ea;
+            --text-muted: #9a9da1;
+            --bg: #1a1d23;
+            --bg-alt: #22252b;
+            --border: #33373d;
+            --success: #34d058;
+            --danger: #f85149;
+            --warning: #e3b341;
+            --shadow: rgba(0, 0, 0, 0.4);
         }
 
         * {
@@ -20,56 +43,123 @@
         }
 
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-family: "Segoe UI", "Manrope", Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-primary);
+            color: var(--text);
+            padding: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
 
         .offline-container {
-            background: var(--bg-primary);
+            background: var(--bg);
             border-radius: 20px;
-            padding: 3rem;
+            padding: 2.5rem;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            margin: 1rem;
+            box-shadow: 0 20px 60px var(--shadow);
+            max-width: 520px;
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
         }
 
-        .offline-icon {
-            font-size: 4rem;
-            color: var(--primary-color);
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header with logo */
+        .offline-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
 
-        .offline-title {
-            font-size: 2rem;
+        .offline-header img {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        .offline-header span {
+            font-size: 1.1rem;
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        /* Wifi animation */
+        .wifi-icon {
+            margin-bottom: 1.5rem;
+        }
+
+        .wifi-icon svg {
+            width: 80px;
+            height: 80px;
+        }
+
+        .wifi-icon .wifi-wave {
+            fill: none;
+            stroke: var(--danger);
+            stroke-width: 3;
+            stroke-linecap: round;
+            opacity: 0.3;
+            animation: wifiPulse 2s infinite;
+        }
+
+        .wifi-icon .wifi-wave:nth-child(2) { animation-delay: 0.3s; }
+        .wifi-icon .wifi-wave:nth-child(3) { animation-delay: 0.6s; }
+
+        .wifi-icon .wifi-dot {
+            fill: var(--danger);
+        }
+
+        .wifi-icon .wifi-slash {
+            stroke: var(--danger);
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        @keyframes wifiPulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.6; }
+        }
+
+        .offline-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
         }
 
         .offline-message {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
             line-height: 1.6;
         }
 
+        /* Buttons */
         .offline-actions {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
 
         .btn {
-            padding: 12px 24px;
+            flex: 1;
+            padding: 12px 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -80,8 +170,14 @@
             gap: 0.5rem;
         }
 
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #2196f3 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
         }
 
@@ -90,199 +186,479 @@
             box-shadow: 0 8px 25px rgba(22, 128, 141, 0.3);
         }
 
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary.retrying {
+            background: var(--warning);
+            pointer-events: none;
+        }
+
+        .btn-primary.failed {
+            background: var(--danger);
+        }
+
         .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 2px solid #dee2e6;
+            background: var(--bg-alt);
+            color: var(--text);
+            border: 2px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: #e9ecef;
+            background: var(--border);
         }
 
+        /* Connection status */
         .connection-status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-alt);
             border-radius: 10px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
         }
 
-        .status-indicator {
-            width: 12px;
-            height: 12px;
+        .status-dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-            background: #dc3545;
+            background: var(--danger);
             animation: pulse 2s infinite;
+            flex-shrink: 0;
         }
 
-        .status-indicator.online {
-            background: #28a745;
+        .status-dot.online {
+            background: var(--success);
+            animation: none;
         }
 
         @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
-        .features-list {
+        /* Features list */
+        .features {
             text-align: left;
-            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.25rem;
         }
 
-        .features-list h3 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
+        .features h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .features-list ul {
+        .features h3 svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .features ul {
             list-style: none;
         }
 
-        .features-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f0f0f0;
+        .features li {
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .features-list li:last-child {
-            border-bottom: none;
+        .features li svg {
+            width: 16px;
+            height: 16px;
+            color: var(--success);
+            flex-shrink: 0;
         }
 
-        .features-list i {
-            color: var(--primary-color);
-            margin-right: 0.75rem;
+        /* Cached data section */
+        .cached-data {
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .cached-data h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cached-data h3 svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .cached-items {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .cached-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--bg-alt);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .cached-badge.available {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-toggle svg {
             width: 20px;
+            height: 20px;
+            color: white;
         }
 
+        .theme-toggle .icon-sun { display: none; }
+        .theme-toggle .icon-moon { display: block; }
+
+        [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+        [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+        /* Reconnect progress */
+        .reconnect-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .reconnect-bar.active {
+            display: block;
+        }
+
+        .reconnect-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
         @media (max-width: 480px) {
-            .offline-container {
-                padding: 2rem 1.5rem;
-            }
-
-            .offline-title {
-                font-size: 1.5rem;
-            }
-
-            .offline-actions {
-                flex-direction: column;
-            }
+            .offline-container { padding: 1.75rem 1.25rem; }
+            .offline-title { font-size: 1.4rem; }
+            .offline-actions { flex-direction: column; }
+            .btn { padding: 10px 16px; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
+    <!-- Theme toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <!-- Moon icon -->
+        <svg class="icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+        </svg>
+        <!-- Sun icon -->
+        <svg class="icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" stroke-width="2"/>
+            <path stroke-linecap="round" stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+    </button>
+
     <div class="offline-container">
-        <div class="offline-icon" aria-hidden="true">
-            <i class="fas fa-wifi" style="opacity: 0.3;"></i>
+        <!-- Header -->
+        <div class="offline-header">
+            <img src="/assets/civora_logo.png" alt="SchemeAssist AI Logo" onerror="this.style.display='none'">
+            <span>SchemeAssist AI</span>
+        </div>
+
+        <!-- WiFi off icon (inline SVG — no external dependency) -->
+        <div class="wifi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path class="wifi-wave" d="M1.5 8.5a16.5 16.5 0 0121 0"/>
+                <path class="wifi-wave" d="M5 12a11 11 0 0114 0"/>
+                <path class="wifi-wave" d="M8.5 15.5a5.5 5.5 0 017 0"/>
+                <circle class="wifi-dot" cx="12" cy="19" r="2"/>
+                <line class="wifi-slash" x1="3" y1="3" x2="21" y2="21"/>
+            </svg>
         </div>
 
         <h1 class="offline-title">You're Offline</h1>
-
         <p class="offline-message">
-            It looks like you're not connected to the internet. Don't worry - you can still
-            browse cached content and use some features of SchemeAssist AI.
+            No internet connection detected. Don't worry — you can still access cached content and some features of SchemeAssist AI.
         </p>
 
+        <!-- Reconnect progress bar -->
+        <div class="reconnect-bar" id="reconnectBar">
+            <div class="reconnect-bar-fill" id="reconnectFill"></div>
+        </div>
+
+        <!-- Action buttons -->
         <div class="offline-actions">
-            <button type="button" onclick="tryReconnect(this)" class="btn btn-primary">
-                <i class="fas fa-sync-alt"></i>
-                Try Again
+            <button type="button" id="retryBtn" class="btn btn-primary" onclick="tryReconnect()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/>
+                </svg>
+                <span id="retryText">Try Again</span>
             </button>
 
-            <button type="button" onclick="goHome()" class="btn btn-secondary">
-                <i class="fas fa-home"></i>
+            <button type="button" class="btn btn-secondary" onclick="goHome()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/>
+                </svg>
                 Go Home
             </button>
         </div>
 
+        <!-- Connection status -->
         <div class="connection-status" role="status" aria-live="polite">
-            <span class="status-indicator" id="statusIndicator"></span>
-            <span id="statusText">Connection Status: Offline</span>
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Checking connection...</span>
         </div>
 
-        <div class="features-list">
-            <h3>Available Offline:</h3>
+        <!-- Offline features -->
+        <div class="features">
+            <h3>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Available Offline
+            </h3>
             <ul>
-                <li><i class="fas fa-check"></i> Browse cached scheme information</li>
-                <li><i class="fas fa-check"></i> View previously loaded recommendations</li>
-                <li><i class="fas fa-check"></i> Access saved favorites</li>
-                <li><i class="fas fa-check"></i> Use the search functionality</li>
-                <li><i class="fas fa-check"></i> Read about section and guides</li>
+                <li>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Browse cached scheme information
+                </li>
+                <li>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    View previously loaded recommendations
+                </li>
+                <li>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Access saved favorites
+                </li>
+                <li>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Read about section and guides
+                </li>
             </ul>
+        </div>
+
+        <!-- Cached data status -->
+        <div class="cached-data" id="cachedDataSection">
+            <h3>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z"/><path stroke-linecap="round" stroke-width="2" d="M9 4v16M4 9h16"/></svg>
+                Cached Data
+            </h3>
+            <div class="cached-items" id="cachedItems">
+                <!-- Populated by JS -->
+            </div>
         </div>
     </div>
 
     <script>
-        function updateConnectionStatus() {
-            const indicator = document.getElementById("statusIndicator");
-            const text = document.getElementById("statusText");
-
-            if (!indicator || !text) {
-                return;
+        // ==========================================
+        // Theme Management (syncs with main app)
+        // ==========================================
+        (function initTheme() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else if (saved === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
             }
+        })();
+
+        document.getElementById('themeToggle').addEventListener('click', function () {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // ==========================================
+        // Connection Monitoring
+        // ==========================================
+        let reconnectAttempts = 0;
+        let autoReconnectTimer = null;
+
+        function updateStatus() {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            if (!dot || !text) return;
 
             if (navigator.onLine) {
-                indicator.classList.add("online");
-                text.textContent = "Connection Status: Online";
+                dot.classList.add('online');
+                text.textContent = 'Connection restored — redirecting...';
+                clearInterval(autoReconnectTimer);
+                setTimeout(function () {
+                    window.location.href = '/';
+                }, 1500);
             } else {
-                indicator.classList.remove("online");
-                text.textContent = "Connection Status: Offline";
+                dot.classList.remove('online');
+                text.textContent = 'Status: Offline' + (reconnectAttempts > 0 ? ' (' + reconnectAttempts + ' attempts)' : '');
             }
         }
 
-        function tryReconnect(button) {
-            updateConnectionStatus();
+        function tryReconnect() {
+            var btn = document.getElementById('retryBtn');
+            var btnText = document.getElementById('retryText');
+            var bar = document.getElementById('reconnectBar');
+            var fill = document.getElementById('reconnectFill');
 
             if (navigator.onLine) {
-                window.location.href = "/";
+                window.location.href = '/';
                 return;
             }
 
-            if (!button) {
-                return;
-            }
+            reconnectAttempts++;
+            btn.classList.add('retrying');
+            btnText.textContent = 'Checking...';
+            bar.classList.add('active');
 
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-times"></i> Still Offline';
-            button.style.background = "#dc3545";
+            // Animate progress bar
+            var progress = 0;
+            var interval = setInterval(function () {
+                progress += 2;
+                fill.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
 
-            setTimeout(() => {
-                button.innerHTML = originalText;
-                button.style.background = "";
-            }, 2000);
+                    if (navigator.onLine) {
+                        btnText.textContent = 'Connected!';
+                        btn.classList.remove('retrying');
+                        window.location.href = '/';
+                    } else {
+                        // Try a real network request
+                        fetch('/api/health', { method: 'HEAD', cache: 'no-store' })
+                            .then(function () {
+                                btnText.textContent = 'Connected!';
+                                btn.classList.remove('retrying');
+                                window.location.href = '/';
+                            })
+                            .catch(function () {
+                                btn.classList.remove('retrying');
+                                btn.classList.add('failed');
+                                btnText.textContent = 'Still Offline';
+                                updateStatus();
+
+                                setTimeout(function () {
+                                    btn.classList.remove('failed');
+                                    btnText.textContent = 'Try Again';
+                                    bar.classList.remove('active');
+                                    fill.style.width = '0%';
+                                }, 2000);
+                            });
+                    }
+                }
+            }, 20);
         }
 
         function goHome() {
-            if (navigator.onLine) {
-                window.location.href = "/";
+            // Try to load cached index.html via the service worker
+            window.location.href = '/index.html';
+        }
+
+        // ==========================================
+        // Cached Data Detection
+        // ==========================================
+        function checkCachedData() {
+            var container = document.getElementById('cachedItems');
+            if (!container) return;
+
+            var items = [
+                { label: 'Home Page', key: '/' },
+                { label: 'Styles', key: '/style.css' },
+                { label: 'App Logic', key: '/script.js' },
+                { label: 'Login Page', key: '/login.html' },
+                { label: 'Profile Page', key: '/profile.html' }
+            ];
+
+            // Check cache API
+            if ('caches' in window) {
+                caches.open('schemeassist-v1.1.0').then(function (cache) {
+                    var promises = items.map(function (item) {
+                        return cache.match(item.key).then(function (response) {
+                            return { label: item.label, cached: !!response };
+                        });
+                    });
+                    return Promise.all(promises);
+                }).then(function (results) {
+                    container.innerHTML = '';
+                    results.forEach(function (r) {
+                        var badge = document.createElement('span');
+                        badge.className = 'cached-badge' + (r.cached ? ' available' : '');
+                        badge.textContent = (r.cached ? '\u2713 ' : '\u2717 ') + r.label;
+                        container.appendChild(badge);
+                    });
+                }).catch(function () {
+                    container.innerHTML = '<span class="cached-badge">Unable to check cache</span>';
+                });
             } else {
-                window.location.href = "/index.html";
+                container.innerHTML = '<span class="cached-badge">Cache API not supported</span>';
             }
         }
 
-        window.addEventListener("online", updateConnectionStatus);
-        window.addEventListener("offline", updateConnectionStatus);
+        // ==========================================
+        // Event Listeners
+        // ==========================================
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
 
-        updateConnectionStatus();
+        // Initial setup
+        updateStatus();
+        checkCachedData();
 
-        setInterval(() => {
-            updateConnectionStatus();
+        // Auto-retry every 10 seconds
+        autoReconnectTimer = setInterval(function () {
             if (navigator.onLine) {
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1000);
+                updateStatus();
             }
-        }, 5000);
+        }, 10000);
     </script>
-
-    <!-- Font Awesome (cached) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>

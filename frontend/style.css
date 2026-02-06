@@ -3089,45 +3089,44 @@ body::before {
 
 /* ===== DARK MODE TOGGLE ===== */
 .theme-toggle {
-    position: fixed;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    z-index: 1000;
-    background: #ffffff;
-    border: 2px solid #dee2e6;
-    border-radius: 50px;
-    padding: 12px;
+    position: relative;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    padding: 0;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    width: 60px;
-    height: 60px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
 .theme-toggle:hover {
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
 }
 
 .theme-toggle i {
-    font-size: 1.5rem;
-    color: #16808D;
+    font-size: 1.1rem;
+    color: #ffffff;
     transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .theme-toggle {
-    background: #2d2d2d;
-    border-color: #404040;
-    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 [data-theme="dark"] .theme-toggle i {
-    color: #ffffff;
+    color: #ffd43b;
 }
 
 .theme-toggle .fa-sun {
