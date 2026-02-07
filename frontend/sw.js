@@ -1,5 +1,5 @@
-// Service Worker for SchemeAssist AI
-const CACHE_NAME = 'schemeassist-v1.1.0';
+// Service Worker for Civora Nexus
+const CACHE_NAME = 'civoranexus-v1.1.0';
 const OFFLINE_URL = '/offline.html';
 
 // Files to cache for offline functionality
@@ -19,7 +19,9 @@ const CACHE_FILES = [
     '/js/app-enhanced.js',
     '/js/performance-monitor.js',
     '/manifest.json',
-    '/assets/civora_logo.png'
+    '/assets/short_logo.png',
+    '/assets/Long_logo.png',
+    '/assets/favicon.ico'
 ];
 
 // External resources to cache
@@ -227,8 +229,8 @@ self.addEventListener('push', (event) => {
 
     const options = {
         body: 'You have new scheme recommendations available!',
-        icon: '/assets/civora_logo.png',
-        badge: '/assets/civora_logo.png',
+        icon: '/assets/favicon-192x192.png',
+        badge: '/assets/favicon-96x96.png',
         tag: 'scheme-update',
         requireInteraction: true,
         actions: [
@@ -252,7 +254,7 @@ self.addEventListener('push', (event) => {
     }
 
     event.waitUntil(
-        self.registration.showNotification('SchemeAssist AI', options)
+        self.registration.showNotification('Civora Nexus', options)
     );
 });
 

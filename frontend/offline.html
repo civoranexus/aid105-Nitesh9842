@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - SchemeAssist AI</title>
+    <title>Offline - Civora Nexus</title>
     <meta name="theme-color" content="#16808D">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="/assets/civora_logo.png">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <style>
         :root {
-            --primary: #16808d;
-            --primary-light: #1a9baa;
-            --text: #212529;
-            --text-muted: #6c757d;
-            --bg: #ffffff;
-            --bg-alt: #f8f9fa;
+            --primary: #16808D;
+            --primary-light: #1B9AAA;
+            --text: #071426;
+            --text-muted: #4B5A6A;
+            --bg: #FFFFFF;
+            --bg-alt: #F4F7FA;
             --border: #dee2e6;
             --success: #28a745;
             --danger: #dc3545;
@@ -43,8 +43,8 @@
         }
 
         body {
-            font-family: "Segoe UI", "Manrope", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Manrope", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #142C52 0%, #16808D 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -408,8 +408,8 @@
     <div class="offline-container">
         <!-- Header -->
         <div class="offline-header">
-            <img src="/assets/civora_logo.png" alt="SchemeAssist AI Logo" onerror="this.style.display='none'">
-            <span>SchemeAssist AI</span>
+            <img src="/assets/short_logo.png" alt="Civora Nexus Logo" onerror="this.style.display='none'">
+            <span>Civora Nexus</span>
         </div>
 
         <!-- WiFi off icon (inline SVG — no external dependency) -->
@@ -425,7 +425,7 @@
 
         <h1 class="offline-title">You're Offline</h1>
         <p class="offline-message">
-            No internet connection detected. Don't worry — you can still access cached content and some features of SchemeAssist AI.
+            No internet connection detected. Don't worry — you can still access cached content and some features of Civora Nexus.
         </p>
 
         <!-- Reconnect progress bar -->
@@ -620,7 +620,7 @@
 
             // Check cache API
             if ('caches' in window) {
-                caches.open('schemeassist-v1.1.0').then(function (cache) {
+                caches.open('civoranexus-v1.1.0').then(function (cache) {
                     var promises = items.map(function (item) {
                         return cache.match(item.key).then(function (response) {
                             return { label: item.label, cached: !!response };
