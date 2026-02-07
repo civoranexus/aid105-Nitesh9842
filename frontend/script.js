@@ -1,5 +1,5 @@
 // ===== CONFIGURATION =====
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 // ===== PHASE 1 IMPROVEMENTS =====
 

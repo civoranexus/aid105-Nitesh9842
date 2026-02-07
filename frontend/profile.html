@@ -645,7 +645,7 @@
                 window.location.href = 'index.html';
             });
 
-            fetch('http://localhost:5000/api/profile', {
+            fetch('/api/profile', {
                 method: 'GET',
                 headers: { 'Authorization': token }
             })
@@ -709,7 +709,7 @@
                 occupation: document.getElementById('profileOccupation').value
             };
 
-            fetch('http://localhost:5000/api/profile', {
+            fetch('/api/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

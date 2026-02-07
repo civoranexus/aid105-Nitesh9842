@@ -161,7 +161,7 @@
                 return;
             }
             // Real API call to backend
-            fetch('http://localhost:5000/api/login', {
+            fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -173,7 +173,7 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('username', username);
                     // Check if profile is complete
-                    fetch('http://localhost:5000/api/profile', {
+                    fetch('/api/profile', {
                         method: 'GET',
                         headers: { 'Authorization': data.token }
                     })
@@ -214,7 +214,7 @@
                 return;
             }
             // Real API call to backend
-            fetch('http://localhost:5000/api/register', {
+            fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -227,7 +227,7 @@
                     formError.style.display = 'block';
                     // Auto-login and redirect to profile
                     setTimeout(() => {
-                        fetch('http://localhost:5000/api/login', {
+                        fetch('/api/login', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ username, password })
