@@ -230,7 +230,7 @@ def save_json_file(filepath, data):
 def api_info():
     """API information endpoint"""
     return jsonify({
-        "name": "SchemeAssist AI Backend",
+        "name": "Civora Nexus Backend",
         "version": "3.0",
         "endpoints": {
             "health": "/api/health",
@@ -251,10 +251,25 @@ def home():
     """Serve the index.html page"""
     return render_template('index.html')
 
+@app.route('/login.html')
+def serve_login():
+    """Serve the login page"""
+    return render_template('login.html')
+
+@app.route('/profile.html')
+def serve_profile():
+    """Serve the profile page"""
+    return render_template('profile.html')
+
+@app.route('/offline.html')
+def serve_offline():
+    """Serve the offline page"""
+    return render_template('offline.html')
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({"status": "ok", "message": "SchemeAssist AI Backend is running"})
+    return jsonify({"status": "ok", "message": "Civora Nexus Backend is running"})
 
 @app.route('/api/recommend', methods=['POST'])
 @handle_errors
@@ -595,6 +610,6 @@ def internal_error(error):
 
 
 if __name__ == "__main__":
-    print("=== SchemeAssist AI Backend ===")
+    print("=== Civora Nexus Backend ===")
     print("Starting Flask server on http://localhost:5000")
     app.run(debug=True, port=5000)
