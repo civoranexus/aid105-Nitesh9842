@@ -71,11 +71,11 @@
         <ul class="nav-menu" role="menubar" aria-label="Main menu">
             <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
             <li><a href="#recommend" class="nav-link" data-section="recommend">Recommendations</a></li>
-            <li><a href="#alerts" class="nav-link" data-section="alerts">Alerts</a></li>
             <li><a href="#compare" class="nav-link" data-section="compare">Compare</a></li>
             <li><a href="#search" class="nav-link" data-section="search">Search</a></li>
             <li><a href="#favorites" class="nav-link" data-section="favorites">Favorites</a></li>
             <li><a href="#stats" class="nav-link" data-section="stats">Statistics</a></li>
+            <li><a href="#feedback" class="nav-link" data-section="feedback">Feedback</a></li>
             <li><a href="#about" class="nav-link" data-section="about">About</a></li>
         </ul>
         <div class="user-actions">
@@ -311,33 +311,6 @@
     </div>
 </section>
 
-<!-- Alerts Section -->
-<section class="section hidden" id="alerts">
-    <div class="container">
-        <div class="section-header">
-            <h2><i class="fas fa-bell"></i> Scheme Alerts & Updates</h2>
-            <p>Stay updated with recent scheme changes, deadlines, and eligibility notifications</p>
-        </div>
-
-        <div class="alert-controls">
-            <button class="btn-primary" onclick="checkUpdates()">
-                <i class="fas fa-sync-alt"></i> Check All Alerts
-            </button>
-            <button class="btn-secondary" onclick="checkEligibilityChanges()">
-                <i class="fas fa-calculator"></i> Eligibility Calculator
-            </button>
-        </div>
-
-        <div id="alertsContainer" class="alerts-grid">
-            <div class="alert-placeholder">
-                <i class="fas fa-bell-slash"></i>
-                <p>No alerts yet. Click "Check All Alerts" to see updates, deadlines, and priority notifications.</p>
-                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Get recommendations first to receive personalized alerts.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Compare Section -->
 <section class="section hidden" id="compare">
     <div class="container">
@@ -514,6 +487,74 @@
     </div>
 </section>
 
+<!-- Feedback Section -->
+<section class="section hidden" id="feedback" role="region" aria-labelledby="feedback-heading">
+    <div class="container">
+        <div class="section-header">
+            <h2 id="feedback-heading"><i class="fas fa-comment-dots" aria-hidden="true"></i> Share Your Feedback</h2>
+            <p>Help us improve Civora Nexus by sharing your experience and suggestions</p>
+        </div>
+
+        <div class="form-container">
+            <form id="feedbackForm" novalidate aria-label="Feedback form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="feedbackName"><i class="fas fa-user" aria-hidden="true"></i> Your Name</label>
+                        <input type="text" id="feedbackName" placeholder="Enter your name" required aria-required="true" aria-invalid="false">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackEmail"><i class="fas fa-envelope" aria-hidden="true"></i> Email Address</label>
+                        <input type="email" id="feedbackEmail" placeholder="Enter your email" required aria-required="true" aria-invalid="false">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="feedbackType"><i class="fas fa-tag" aria-hidden="true"></i> Feedback Type</label>
+                        <select id="feedbackType" required aria-required="true">
+                            <option value="">Select feedback type</option>
+                            <option value="general">General Feedback</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="improvement">Improvement Suggestion</option>
+                            <option value="complaint">Complaint</option>
+                            <option value="praise">Praise / Appreciation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-star" aria-hidden="true"></i> Rate Your Experience</label>
+                        <div class="star-rating" id="starRating" role="radiogroup" aria-label="Rating">
+                            <span class="star" data-value="1" role="radio" aria-checked="false" aria-label="1 star" tabindex="0"><i class="far fa-star"></i></span>
+                            <span class="star" data-value="2" role="radio" aria-checked="false" aria-label="2 stars" tabindex="0"><i class="far fa-star"></i></span>
+                            <span class="star" data-value="3" role="radio" aria-checked="false" aria-label="3 stars" tabindex="0"><i class="far fa-star"></i></span>
+                            <span class="star" data-value="4" role="radio" aria-checked="false" aria-label="4 stars" tabindex="0"><i class="far fa-star"></i></span>
+                            <span class="star" data-value="5" role="radio" aria-checked="false" aria-label="5 stars" tabindex="0"><i class="far fa-star"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedbackMessage"><i class="fas fa-pencil-alt" aria-hidden="true"></i> Your Feedback</label>
+                    <textarea id="feedbackMessage" rows="5" placeholder="Tell us what you think... What did you like? What can we improve?" required aria-required="true" aria-invalid="false" style="width:100%;padding:0.75rem;border:1px solid #ccc;border-radius:0.5rem;font-family:inherit;font-size:1rem;resize:vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" aria-label="Submit feedback">
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Submit Feedback
+                </button>
+            </form>
+        </div>
+
+        <div id="feedbackSuccess" class="hidden" style="text-align:center;padding:2rem;">
+            <i class="fas fa-check-circle" style="font-size:3rem;color:#16808D;"></i>
+            <h3 style="margin-top:1rem;">Thank You for Your Feedback!</h3>
+            <p style="margin-top:0.5rem;color:#666;">Your feedback helps us make Civora Nexus better for everyone.</p>
+            <button class="btn-primary" onclick="resetFeedbackForm()" style="margin-top:1rem;">
+                <i class="fas fa-plus"></i> Submit Another
+            </button>
+        </div>
+    </div>
+</section>
+
 <!-- About Section -->
 <section class="section hidden" id="about">
     <div class="container">
@@ -573,7 +614,6 @@
                     <li>Enter your profile details (state, income, interests)</li>
                     <li>Our AI analyzes 200+ government schemes</li>
                     <li>Get personalized recommendations with eligibility scores</li>
-                    <li>Receive alerts about new schemes and deadlines</li>
                     <li>Compare schemes side-by-side to make informed decisions</li>
                 </ol>
             </div>
@@ -585,8 +625,6 @@
                     <li><i class="fas fa-check"></i> AI-powered scheme matching</li>
                     <li><i class="fas fa-check"></i> Real-time eligibility checking</li>
                     <li><i class="fas fa-check"></i> Advanced scheme comparison tool</li>
-                    <li><i class="fas fa-check"></i> Deadline & priority notifications</li>
-                    <li><i class="fas fa-check"></i> Income-based eligibility calculator</li>
                     <li><i class="fas fa-check"></i> 55+ scholarship & education schemes</li>
                     <li><i class="fas fa-check"></i> Mobile responsive design</li>
                 </ul>
@@ -646,8 +684,8 @@
             <ul>
                 <li><a href="#home">Home</a></li>
                 <li><a href="#recommend">Recommendations</a></li>
-                <li><a href="#alerts">Alerts</a></li>
                 <li><a href="#about">About</a></li>
+                <li><a href="#feedback">Feedback</a></li>
             </ul>
         </div>
         <div class="footer-section">

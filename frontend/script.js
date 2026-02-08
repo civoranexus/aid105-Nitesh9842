@@ -363,7 +363,7 @@ let currentRecommendations = [];
 let searchResults = [];
 let userProfile = null;
 let selectedForComparison = [];
-let alertsCache = null;
+
 
 // ===== AUTO-LOAD USER PROFILE AND RECOMMENDATIONS =====
 async function loadUserProfileAndRecommend() {
@@ -541,6 +541,7 @@ function initializeApp() {
     setupNavigation();
     setupFormHandler();
     setupMobileMenu();
+    initFeedbackForm();
     checkBackendHealth();
 }
 
@@ -606,6 +607,7 @@ function setupMobileMenu() {
             
             navMenu.classList.toggle('active');
             hamburger.classList.toggle('active');
+            document.body.classList.toggle('menu-open');
             
             // Update ARIA attributes
             hamburger.setAttribute('aria-expanded', !isExpanded);
@@ -613,6 +615,18 @@ function setupMobileMenu() {
             // Trap focus in mobile menu when open
             if (!isExpanded) {
                 navLinks[0]?.focus();
+            }
+        });
+
+        // Close menu when clicking outside (on the overlay)
+        document.addEventListener('click', (e) => {
+            if (navMenu.classList.contains('active') && 
+                !navMenu.contains(e.target) && 
+                !hamburger.contains(e.target)) {
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+                document.body.classList.remove('menu-open');
+                hamburger.setAttribute('aria-expanded', 'false');
             }
         });
     }
@@ -623,6 +637,7 @@ function setupMobileMenu() {
             navMenu.classList.remove('active');
             if (hamburger) {
                 hamburger.classList.remove('active');
+                document.body.classList.remove('menu-open');
                 hamburger.setAttribute('aria-expanded', 'false');
             }
         });
@@ -634,6 +649,7 @@ function setupMobileMenu() {
             navMenu.classList.remove('active');
             if (hamburger) {
                 hamburger.classList.remove('active');
+                document.body.classList.remove('menu-open');
                 hamburger.setAttribute('aria-expanded', 'false');
                 hamburger.focus();
             }
@@ -1391,426 +1407,6 @@ function displayComparison(schemes) {
     container.appendChild(grid);
 }
 
-// ===== ALERTS FUNCTIONALITY =====
-async function checkUpdates() {
-    if (!userProfile) {
-        showToast('Please get recommendations first', 'error');
-        navigateToSection('recommend');
-        return;
-    }
-
-    showLoading();
-
-    try {
-        const response = await fetch(`${API_URL}/alerts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userProfile)
-        });
-
-        hideLoading();
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                alertsCache = data;
-                displayEnhancedAlerts(data);
-                showToast(`Found ${data.total_count} alerts for you`, 'success');
-                return;
-            }
-        }
-        
-        // Fallback to local alerts
-        displayLocalAlerts();
-    } catch (error) {
-        hideLoading();
-        displayLocalAlerts();
-    }
-}
-
-function displayEnhancedAlerts(data) {
-    const container = document.getElementById('alertsContainer');
-    container.innerHTML = '';
-
-    // Alert summary
-    const summaryDiv = document.createElement('div');
-    summaryDiv.className = 'alerts-summary';
-    summaryDiv.innerHTML = `
-        <div class="summary-card">
-            <i class="fas fa-bell"></i>
-            <h4>${data.total_count}</h4>
-            <p>Total Alerts</p>
-        </div>
-        <div class="summary-card">
-            <i class="fas fa-sync-alt"></i>
-            <h4>${data.alerts.recent_updates?.length || 0}</h4>
-            <p>Recent Updates</p>
-        </div>
-        <div class="summary-card priority">
-            <i class="fas fa-exclamation-circle"></i>
-            <h4>${data.alerts.high_priority?.length || 0}</h4>
-            <p>High Priority</p>
-        </div>
-        <div class="summary-card deadline">
-            <i class="fas fa-clock"></i>
-            <h4>${data.deadlines?.length || 0}</h4>
-            <p>Deadlines</p>
-        </div>
-    `;
-    container.appendChild(summaryDiv);
-
-    // Alert filters
-    const filterDiv = document.createElement('div');
-    filterDiv.className = 'alert-filters';
-    filterDiv.innerHTML = `
-        <button class="filter-btn active" onclick="filterAlerts('all')">All</button>
-        <button class="filter-btn" onclick="filterAlerts('priority')">High Priority</button>
-        <button class="filter-btn" onclick="filterAlerts('updates')">Updates</button>
-        <button class="filter-btn" onclick="filterAlerts('deadlines')">Deadlines</button>
-        <button class="filter-btn" onclick="filterAlerts('category')">Category Match</button>
-    `;
-    container.appendChild(filterDiv);
-
-    // Alerts list container
-    const alertsList = document.createElement('div');
-    alertsList.id = 'alertsList';
-    alertsList.className = 'alerts-grid';
-    container.appendChild(alertsList);
-
-    // Display all alerts
-    displayAlertsByFilter('all', data);
-}
-
-function filterAlerts(type) {
-    // Update active filter button
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (alertsCache) {
-        displayAlertsByFilter(type, alertsCache);
-    }
-}
-
-function displayAlertsByFilter(type, data) {
-    const alertsList = document.getElementById('alertsList');
-    alertsList.innerHTML = '';
-
-    let alertsToShow = [];
-
-    switch(type) {
-        case 'priority':
-            alertsToShow = data.alerts.high_priority || [];
-            break;
-        case 'updates':
-            alertsToShow = data.alerts.recent_updates || [];
-            break;
-        case 'deadlines':
-            alertsToShow = data.deadlines || [];
-            break;
-        case 'category':
-            alertsToShow = data.alerts.category_alerts || [];
-            break;
-        default:
-            alertsToShow = [
-                ...(data.alerts.high_priority || []),
-                ...(data.deadlines || []),
-                ...(data.alerts.recent_updates || []),
-                ...(data.alerts.category_alerts || [])
-            ];
-    }
-
-    if (alertsToShow.length === 0) {
-        alertsList.innerHTML = `
-            <div class="alert-placeholder">
-                <i class="fas fa-check-circle"></i>
-                <p>No ${type === 'all' ? '' : type} alerts found.</p>
-            </div>
-        `;
-        return;
-    }
-
-    alertsToShow.forEach(alert => {
-        const alertEl = createAlertElement(alert);
-        alertsList.appendChild(alertEl);
-    });
-}
-
-function createAlertElement(alert) {
-    const el = document.createElement('div');
-    const priorityClass = alert.priority === 'critical' ? 'critical' : 
-                         alert.priority === 'high' ? 'priority' : 
-                         alert.alert_type === 'deadline' ? 'deadline' :
-                         alert.alert_type === 'update' ? 'update' : 'info';
-
-    const icon = alert.alert_type === 'deadline' ? 'clock' :
-                alert.alert_type === 'priority' ? 'exclamation-triangle' :
-                alert.alert_type === 'update' ? 'sync-alt' :
-                alert.alert_type === 'new' ? 'star' :
-                alert.alert_type === 'category_match' ? 'bookmark' : 'bell';
-
-    // Timestamp formatting
-    let timestamp = '';
-    if (alert.timestamp || alert.date || alert.deadline_info) {
-        const dateStr = alert.timestamp || alert.date || alert.deadline_info;
-        const dateObj = new Date(dateStr);
-        if (!isNaN(dateObj)) {
-            timestamp = `<span class="alert-timestamp"><i class='fas fa-clock'></i> ${dateObj.toLocaleString()}</span>`;
-        } else if (alert.deadline_info) {
-            timestamp = `<span class="alert-timestamp"><i class='fas fa-clock'></i> ${alert.deadline_info}</span>`;
-        }
-    }
-
-    // Mark as read/dismiss logic
-    el.className = `alert-item ${priorityClass}`;
-    el.innerHTML = `
-        <div class="alert-icon">
-            <i class="fas fa-${icon}"></i>
-        </div>
-        <div class="alert-content">
-            <div class="alert-header">
-                <h4>${alert.scheme_name}</h4>
-                <span class="alert-badge ${priorityClass}">${alert.priority || alert.alert_type}</span>
-                <button class="alert-dismiss" title="Dismiss" onclick="this.closest('.alert-item').remove()"><i class="fas fa-times"></i></button>
-            </div>
-            <p class="alert-category"><i class="fas fa-tag"></i> ${alert.category || ''}</p>
-            <p class="alert-message">${alert.message || alert.reason || ''}</p>
-            ${alert.benefits ? `<p class="alert-benefits"><i class="fas fa-gift"></i> ${alert.benefits}</p>` : ''}
-            ${alert.deadline_info ? `<p class="alert-deadline"><i class="fas fa-calendar-alt"></i> ${alert.deadline_info}</p>` : ''}
-            ${alert.action_required ? `<p class="alert-action"><i class="fas fa-hand-point-right"></i> ${alert.action_required}</p>` : ''}
-            ${timestamp}
-            <button class="alert-read-btn" onclick="this.closest('.alert-item').classList.add('read');this.remove();" title="Mark as Read"><i class="fas fa-check"></i> Mark as Read</button>
-        </div>
-    `;
-    return el;
-}
-
-function displayLocalAlerts() {
-    const recentSchemes = currentRecommendations.filter(scheme => {
-        const updateDate = new Date(scheme.last_updated);
-        const daysAgo = Math.floor((new Date() - updateDate) / (1000 * 60 * 60 * 24));
-        return daysAgo <= 30;
-    });
-
-    displayAlerts(recentSchemes);
-    
-    if (recentSchemes.length > 0) {
-        showToast(`Found ${recentSchemes.length} recently updated schemes`, 'success');
-    } else {
-        showToast('No recent updates found', 'info');
-    }
-}
-
-function displayAlerts(schemes) {
-    const container = document.getElementById('alertsContainer');
-    container.innerHTML = '';
-
-    if (schemes.length === 0) {
-        container.innerHTML = `
-            <div class="alert-placeholder">
-                <i class="fas fa-check-circle"></i>
-                <p>No recent updates found for your profile.</p>
-            </div>
-        `;
-        return;
-    }
-
-    schemes.forEach(scheme => {
-        const updateDate = new Date(scheme.last_updated);
-        const daysAgo = Math.floor((new Date() - updateDate) / (1000 * 60 * 60 * 24));
-
-        const alert = document.createElement('div');
-        alert.className = 'alert-item update';
-        alert.innerHTML = `
-            <div class="alert-icon">
-                <i class="fas fa-bell"></i>
-            </div>
-            <div class="alert-content">
-                <h4>${scheme.scheme_name}</h4>
-                <p>Category: ${scheme.category}</p>
-                <p>Updated ${daysAgo} days ago</p>
-                <p style="font-size: 0.9rem; color: #10b981; margin-top: 0.5rem;">
-                    <i class="fas fa-star"></i> Eligibility Score: ${scheme.score}
-                </p>
-            </div>
-        `;
-        container.appendChild(alert);
-    });
-}
-
-async function checkEligibilityChanges() {
-    if (!userProfile) {
-        showToast('Please get recommendations first', 'error');
-        navigateToSection('recommend');
-        return;
-    }
-
-    // Show eligibility modal
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal-content eligibility-modal">
-            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-            <h2><i class="fas fa-calculator"></i> Eligibility Calculator</h2>
-            <div class="modal-body">
-                <p>Current Income: <strong>₹${userProfile.income.toLocaleString()}</strong></p>
-                <p>Check how income changes affect your scheme eligibility:</p>
-                
-                <div class="income-change-input">
-                    <label>Income Change Amount (₹)</label>
-                    <input type="number" id="incomeChangeInput" placeholder="e.g., 50000 or -30000">
-                    <small>Use negative number for decrease</small>
-                </div>
-                
-                <div class="quick-buttons">
-                    <button onclick="setIncomeChange(50000)">+₹50,000</button>
-                    <button onclick="setIncomeChange(100000)">+₹1,00,000</button>
-                    <button onclick="setIncomeChange(-50000)">-₹50,000</button>
-                    <button onclick="setIncomeChange(-100000)">-₹1,00,000</button>
-                </div>
-                
-                <button class="btn-primary" onclick="analyzeEligibilityChange()">
-                    <i class="fas fa-search"></i> Analyze Impact
-                </button>
-                
-                <div id="eligibilityResults" class="eligibility-results"></div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
-}
-
-function setIncomeChange(amount) {
-    document.getElementById('incomeChangeInput').value = amount;
-}
-
-async function analyzeEligibilityChange() {
-    const incomeChangeInput = document.getElementById('incomeChangeInput');
-    if (!incomeChangeInput) {
-        showToast('Income change input not found', 'error');
-        return;
-    }
-    
-    const incomeChange = parseInt(incomeChangeInput.value) || 0;
-    
-    if (incomeChange === 0) {
-        showToast('Please enter an income change amount', 'error');
-        return;
-    }
-
-    const resultsDiv = document.getElementById('eligibilityResults');
-    if (!resultsDiv) return;
-    
-    resultsDiv.innerHTML = '<div class="loading-small"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>';
-
-    try {
-        const newIncome = userProfile.income + incomeChange;
-        
-        const response = await fetch(`${API_URL}/eligibility`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                state: userProfile.state,
-                income: userProfile.income,
-                category: userProfile.category,
-                age: userProfile.age || 30,
-                caste_category: userProfile.caste_category || 'General',
-                income_change: incomeChange
-            })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                displayEligibilityResults(data.eligibility_changes, resultsDiv);
-                showToast('Analysis complete!', 'success');
-                return;
-            } else {
-                throw new Error(data.error || 'Analysis failed');
-            }
-        } else {
-            throw new Error('Server returned an error');
-        }
-    } catch (error) {
-        console.error('Eligibility analysis error:', error);
-        
-        // Provide a more helpful fallback
-        const newIncome = userProfile.income + incomeChange;
-        const direction = incomeChange > 0 ? 'increase' : 'decrease';
-        
-        resultsDiv.innerHTML = `
-            <div class="eligibility-summary">
-                <h4>Income Change Analysis</h4>
-                <p><strong>Current Income:</strong> ₹${userProfile.income.toLocaleString()}</p>
-                <p><strong>New Income:</strong> ₹${newIncome.toLocaleString()}</p>
-                <p><strong>Change:</strong> ${incomeChange > 0 ? '+' : ''}₹${incomeChange.toLocaleString()} (${direction})</p>
-                <div class="info-message" style="margin-top: 1rem;">
-                    <i class="fas fa-info-circle"></i>
-                    <p>For detailed eligibility analysis, please ensure the backend server is running.</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Error: ${error.message}</p>
-                </div>
-            </div>
-        `;
-    }
-}
-
-function displayEligibilityResults(results, container) {
-    const direction = results.income_change > 0 ? 'increase' : 'decrease';
-    const arrow = results.income_change > 0 ? 'arrow-up' : 'arrow-down';
-    const color = results.gained.length >= results.lost.length ? '#10b981' : '#ef4444';
-
-    container.innerHTML = `
-        <div class="eligibility-summary">
-            <div class="income-change-display">
-                <i class="fas fa-${arrow}" style="color: ${color}"></i>
-                <span>₹${Math.abs(results.income_change).toLocaleString()} ${direction}</span>
-            </div>
-            <p class="impact-summary">${results.impact_summary}</p>
-            
-            <div class="eligibility-stats">
-                <div class="stat gained">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>${results.gained.length} schemes gained</span>
-                </div>
-                <div class="stat lost">
-                    <i class="fas fa-minus-circle"></i>
-                    <span>${results.lost.length} schemes lost</span>
-                </div>
-            </div>
-            
-            ${results.gained.length > 0 ? `
-                <div class="scheme-list gained">
-                    <h4><i class="fas fa-check"></i> New Eligible Schemes</h4>
-                    ${results.gained.slice(0, 5).map(s => `
-                        <div class="scheme-item">
-                            <span>${s.scheme_name}</span>
-                            <small>${s.category}</small>
-                        </div>
-                    `).join('')}
-                    ${results.gained.length > 5 ? `<p class="more">+${results.gained.length - 5} more...</p>` : ''}
-                </div>
-            ` : ''}
-            
-            ${results.lost.length > 0 ? `
-                <div class="scheme-list lost">
-                    <h4><i class="fas fa-times"></i> Schemes You May Lose</h4>
-                    ${results.lost.slice(0, 5).map(s => `
-                        <div class="scheme-item">
-                            <span>${s.scheme_name}</span>
-                            <small>${s.category}</small>
-                        </div>
-                    `).join('')}
-                    ${results.lost.length > 5 ? `<p class="more">+${results.lost.length - 5} more...</p>` : ''}
-                </div>
-            ` : ''}
-        </div>
-    `;
-}
-
 // ===== BACKEND HEALTH CHECK =====
 async function checkBackendHealth() {
     try {
@@ -2290,17 +1886,121 @@ function downloadJSON(jsonData, filename) {
     window.URL.revokeObjectURL(url);
 }
 
+// ===== FEEDBACK FORM =====
+let selectedRating = 0;
+
+function initFeedbackForm() {
+    const form = document.getElementById('feedbackForm');
+    if (!form) return;
+
+    // Star rating interaction
+    const stars = document.querySelectorAll('#starRating .star');
+    stars.forEach(star => {
+        star.addEventListener('click', function () {
+            selectedRating = parseInt(this.dataset.value);
+            updateStars(selectedRating);
+        });
+        star.addEventListener('mouseenter', function () {
+            updateStars(parseInt(this.dataset.value));
+        });
+        star.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectedRating = parseInt(this.dataset.value);
+                updateStars(selectedRating);
+            }
+        });
+    });
+
+    const ratingContainer = document.getElementById('starRating');
+    if (ratingContainer) {
+        ratingContainer.addEventListener('mouseleave', function () {
+            updateStars(selectedRating);
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitFeedback();
+    });
+}
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll('#starRating .star');
+    stars.forEach(star => {
+        const val = parseInt(star.dataset.value);
+        const icon = star.querySelector('i');
+        if (val <= rating) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            star.style.color = '#f5a623';
+            star.setAttribute('aria-checked', 'true');
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            star.style.color = '#ccc';
+            star.setAttribute('aria-checked', 'false');
+        }
+    });
+}
+
+async function submitFeedback() {
+    const name = document.getElementById('feedbackName').value.trim();
+    const email = document.getElementById('feedbackEmail').value.trim();
+    const type = document.getElementById('feedbackType').value;
+    const message = document.getElementById('feedbackMessage').value.trim();
+
+    if (!name || !email || !message) {
+        showToast('Please fill in all required fields', 'error');
+        return;
+    }
+
+    if (selectedRating === 0) {
+        showToast('Please select a star rating', 'error');
+        return;
+    }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, type, rating: selectedRating, message })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('feedbackForm').classList.add('hidden');
+            document.getElementById('feedbackSuccess').classList.remove('hidden');
+            showToast('Feedback submitted successfully!', 'success');
+        } else {
+            showToast(data.message || 'Failed to submit feedback', 'error');
+        }
+    } catch (error) {
+        showToast('Failed to submit feedback. Please try again.', 'error');
+    }
+}
+
+function resetFeedbackForm() {
+    document.getElementById('feedbackForm').reset();
+    selectedRating = 0;
+    updateStars(0);
+    document.getElementById('feedbackForm').classList.remove('hidden');
+    document.getElementById('feedbackSuccess').classList.add('hidden');
+}
+
 // Make functions available globally
 window.navigateToSection = navigateToSection;
 window.toggleCompare = toggleCompare;
 window.compareSelected = compareSelected;
 window.updateCompareSelection = updateCompareSelection;
-window.checkUpdates = checkUpdates;
-window.checkEligibilityChanges = checkEligibilityChanges;
 window.showSchemeDetails = showSchemeDetails;
-window.filterAlerts = filterAlerts;
-window.setIncomeChange = setIncomeChange;
-window.analyzeEligibilityChange = analyzeEligibilityChange;
 window.exportComparison = exportComparison;
 window.printComparison = printComparison;
 window.performSearch = performSearch;
@@ -2314,3 +2014,5 @@ window.updateApplicationStatus = updateApplicationStatus;
 window.showAddApplicationModal = showAddApplicationModal;
 window.loadStatistics = loadStatistics;
 window.exportRecommendations = exportRecommendations;
+window.submitFeedback = submitFeedback;
+window.resetFeedbackForm = resetFeedbackForm;

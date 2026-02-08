@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from recommender import recommend_schemes, get_scheme_details, compare_schemes, search_schemes, get_scheme_statistics
-from alerts import generate_alerts, check_eligibility_changes, get_deadline_alerts, get_new_schemes
 import json
 import os
 import hashlib
@@ -235,9 +234,7 @@ def api_info():
         "endpoints": {
             "health": "/api/health",
             "recommend": "/api/recommend",
-            "alerts": "/api/alerts",
             "compare": "/api/compare",
-            "eligibility": "/api/eligibility",
             "search": "/api/search",
             "statistics": "/api/statistics",
             "favorites": "/api/favorites",
@@ -311,35 +308,6 @@ def recommend():
     })
 
 
-@app.route('/api/alerts', methods=['POST'])
-@handle_errors
-def get_alerts():
-    """Get personalized alerts for user"""
-    data = request.get_json()
-    
-    if not data:
-        raise ValueError("No data provided")
-    
-    user_profile = {
-        "state": data.get('state', 'All'),
-        "income": int(data.get('income', 0)),
-        "category": data.get('category', ''),
-        "age": int(data.get('age', 30)) if data.get('age') else 30
-    }
-    
-    alerts = generate_alerts(user_profile)
-    new_schemes = get_new_schemes(user_profile, days=60)
-    deadline_alerts = get_deadline_alerts(user_profile)
-    
-    return jsonify({
-        "success": True,
-        "alerts": alerts,
-        "new_schemes": new_schemes,
-        "deadlines": deadline_alerts,
-        "total_count": alerts['count'] + len(new_schemes) + len(deadline_alerts)
-    })
-
-
 @app.route('/api/compare', methods=['POST'])
 @handle_errors
 def compare():
@@ -363,32 +331,6 @@ def compare():
     return jsonify({
         "success": True,
         "comparison": comparison_result
-    })
-
-
-@app.route('/api/eligibility', methods=['POST'])
-@handle_errors
-def check_eligibility():
-    """Check eligibility changes based on income change"""
-    data = request.get_json()
-    
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
-    
-    user_profile = {
-        "state": data.get('state', 'All'),
-        "income": int(data.get('income', 0)),
-        "category": data.get('category', ''),
-        "age": int(data.get('age', 30)) if data.get('age') else 30
-    }
-    
-    income_change = int(data.get('income_change', 0))
-    
-    result = check_eligibility_changes(user_profile, income_change)
-    
-    return jsonify({
-        "success": True,
-        "eligibility_changes": result
     })
 
 
@@ -547,6 +489,51 @@ def manage_applications():
         })
     
     raise ValueError("Invalid request method")
+
+
+# Storage for feedback data
+FEEDBACK_FILE = os.path.join(os.path.dirname(__file__), 'feedback.json')
+
+@app.route('/api/feedback', methods=['POST'])
+@handle_errors
+def submit_feedback():
+    """Submit user feedback"""
+    data = request.get_json()
+    if not data:
+        raise ValueError("No data provided")
+
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    feedback_type = data.get('type', '').strip()
+    rating = data.get('rating', 0)
+    message = data.get('message', '').strip()
+
+    if not name or not email or not message:
+        raise ValueError('Name, email, and message are required')
+
+    if not (1 <= int(rating) <= 5):
+        raise ValueError('Rating must be between 1 and 5')
+
+    feedback_entry = {
+        'name': name,
+        'email': email,
+        'type': feedback_type,
+        'rating': int(rating),
+        'message': message,
+        'submitted_at': datetime.utcnow().isoformat()
+    }
+
+    feedbacks = load_json_file(FEEDBACK_FILE)
+    if 'entries' not in feedbacks:
+        feedbacks['entries'] = []
+    feedbacks['entries'].append(feedback_entry)
+    save_json_file(FEEDBACK_FILE, feedbacks)
+
+    logger.info(f"Feedback received from {name} ({feedback_type}), rating: {rating}")
+    return jsonify({
+        'success': True,
+        'message': 'Thank you for your feedback!'
+    })
 
 
 @app.route('/api/export', methods=['POST'])
